@@ -18,6 +18,7 @@ namespace Data.Entities
         public Exercise Exercise { get; set; }
         [Required]
         public int OrderIndex { get; set; }
+
         [InverseProperty(nameof(ExerciseSet.WorkoutExercise))]
         public ICollection<ExerciseSet> Sets { get; set; } = new List<ExerciseSet>();
     }

@@ -19,11 +19,16 @@ namespace Controller
             _context = context;
             _auth = auth;
         }
+        public async Task SaveOrderIndexChanges()
+        {
+            await _context.SaveChangesAsync();
+        }
 
         public async Task<WorkoutExercise> AddExerciseToWorkoutAsync(int workoutId, int exerciseId)
         {
-            var workout = await _context.WorkoutSessions.Include(w => w.Id == workoutId)
+            var workout = await _context.WorkoutSessions
                 .FirstOrDefaultAsync(w => w.Id == workoutId && w.UserId == _auth.GetCurrentUser().Id);
+
             var exercise = await _context.Exercises.FindAsync(exerciseId);
 
             if (workout == null || exercise == null)
@@ -35,12 +40,27 @@ namespace Controller
             {
                 throw new Exception("This exercise is already added to the workout.");
             }
-            var pair = new WorkoutExercise()
+            WorkoutExercise pair;
+            if (workout.Exercises == null)
             {
-                WorkoutId = workoutId,
-                ExerciseId = exerciseId,
-                OrderIndex = workout.Exercises.Count + 1
-            };
+                pair = new WorkoutExercise()
+                {
+                    WorkoutId = workoutId,
+                    ExerciseId = exerciseId,
+                    OrderIndex = 1
+                };
+                workout.Exercises = new List<WorkoutExercise>();
+            }
+            else
+            {
+                pair = new WorkoutExercise()
+                {
+                    WorkoutId = workoutId,
+                    ExerciseId = exerciseId,
+                    OrderIndex = (workout.Exercises ?? new List<WorkoutExercise>()).Count + 1
+                };
+            }
+
             workout.Exercises.Add(pair);
             await _context.SaveChangesAsync();
             return pair;

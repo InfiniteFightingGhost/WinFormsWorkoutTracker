@@ -94,5 +94,15 @@ namespace Controller
             await _context.SaveChangesAsync();
             return session;
         }
+
+        public async Task<WorkoutSession?> GetActiveSessionAsync(int userId)
+        {
+            return await _context.WorkoutSessions
+                .Include(w => w.Exercises)
+                    .ThenInclude(we => we.Exercise)
+                .Include(s => s.Exercises)
+                    .ThenInclude(we => we.Sets)
+                .FirstOrDefaultAsync(s => s.UserId == userId && s.Status == Data.Enums.WorkoutStatus.OnGoing);
+        }
     }
 }

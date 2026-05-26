@@ -4,11 +4,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace Data.Entities
 {
-    [PrimaryKey(nameof(UserId))]
     [Index(nameof(Start))]
     public class WorkoutSession
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         [Required]
         public int UserId { get; set; }
@@ -20,16 +20,19 @@ namespace Data.Entities
         //[ForeignKey(nameof(WorkoutId))]
         //public Workout Workout { get; set; }
 
-        [Column(TypeName = "datetime")]
+        [Column(TypeName = "datetime2")]
         [Required]
         public DateTime Start { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime End { get; set; }
+
+        [Column(TypeName = "datetime2")]
+        public DateTime? End { get; set; }
+
         [Required]
         public WorkoutStatus Status { get; set; }
+
         [StringLength(200)]
         [Unicode(false)]
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
         [InverseProperty(nameof(WorkoutExercise.WorkoutSession))]
         public ICollection<WorkoutExercise> Exercises { get; set; }
     }

@@ -53,6 +53,34 @@ namespace Controller
             return user;
         }
 
+        public async Task<User?> UpdateGenderAsync(int id, Gender gender)
+        {
+            _auth.IsAuthenticated(UserRole.Admin, id);
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+            user.Gender = gender;
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<User?> UpdateProfileAsync(int id, Gender gender, decimal height, decimal weight)
+        {
+            _auth.IsAuthenticated(UserRole.Admin, id);
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+            user.Gender = gender;
+            user.Height = height;
+            user.Weight = weight;
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
         public async Task<User?> DeleteAsync(int id)
         {
             _auth.IsAuthenticated(UserRole.Admin, id);

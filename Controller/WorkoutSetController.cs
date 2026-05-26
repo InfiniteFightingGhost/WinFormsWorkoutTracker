@@ -27,22 +27,45 @@ namespace Controller
             return await _context.ExerciseSets.FindAsync(id);
         }
 
-        public async Task<ExerciseSet> CreateExerciseSetAsync(int workoutExerciseId)
+        public async Task<ExerciseSet> CreateExerciseSetAsync(int workoutId, int exerciseId)
         {
             var exerciseSet = new ExerciseSet()
             {
-                WorkoutExerciseId = workoutExerciseId,
+                WorkoutExerciseId = workoutId,
+                ExerciseId = exerciseId,
                 Repetitions = 0,
                 Weight = 0,
                 Completed = false,
                 OrderIndex = await _context.ExerciseSets
-                .Where(es => es.WorkoutExerciseId == workoutExerciseId)
+                .Where(es => es.WorkoutExerciseId == workoutId && es.ExerciseId == exerciseId)
                 .CountAsync(),
                 SetType = SetType.Regular
             };
             _context.ExerciseSets.Add(exerciseSet);
             await _context.SaveChangesAsync();
             return exerciseSet;
+        }
+
+        public async Task UpdateExerciseSetAsync(ExerciseSet set)
+        {
+            var existing = await _context.ExerciseSets.FindAsync(set.Id);
+            if (existing != null)
+            {
+                existing.Weight = set.Weight;
+                existing.Repetitions = set.Repetitions;
+                existing.Completed = set.Completed;
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task DeleteExerciseSetAsync(int id)
+        {
+            var existing = await _context.ExerciseSets.FindAsync(id);
+            if (existing != null)
+            {
+                _context.ExerciseSets.Remove(existing);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

@@ -61,6 +61,7 @@ namespace Controller
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+            currentUser = user; // Auto-login after registration
             return user;
         }
 
@@ -75,6 +76,11 @@ namespace Controller
                 .FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
             currentUser = user;
             return user;
+        }
+
+        public void Logout()
+        {
+            currentUser = null;
         }
 
         public User? GetCurrentUser()

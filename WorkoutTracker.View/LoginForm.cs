@@ -8,31 +8,14 @@ namespace WorkoutTracker.View
 {
     public partial class LoginForm : Form
     {
-        WorkoutDbContext _context;
-        AuthController _auth;
-        ExerciseController _exercise;
-        MuscleGroupController _muscleGroup;
-        UserController _user;
-        WorkoutController _workout;
-        WorkoutExerciseController _workoutExercise;
-        WorkoutSessionController _workoutSession;
-        WorkoutSetController _workoutSet;
         public LoginForm()
         {
-            _context = new WorkoutDbContext();
-            _auth = new AuthController(_context);
-            _exercise = new ExerciseController(_context);
-            _muscleGroup = new MuscleGroupController(_context, _auth);
-            _user = new UserController(_context, _auth);
-            _workout = new WorkoutController(_context);
-            _workoutExercise = new WorkoutExerciseController(_context, _auth);
-            _workoutSession = new WorkoutSessionController(_context, _auth);
             InitializeComponent();
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            var form = new RegistrationForm(_auth);
+            var form = new RegistrationForm(AppRuntime.Auth);
             this.Hide();
             var result = form.ShowDialog();
             this.Show();
@@ -57,22 +40,20 @@ namespace WorkoutTracker.View
                 {
                     throw new Exception("Password can't be empty");
                 }
-                var user = await _auth.LoginAsync(username, password);
-                textBox1.Text = string.Empty;
-                textBox2.Text = string.Empty;
-
-                //TODO: MAKE NEW USER 
+                var user = await AppRuntime.Auth.LoginAsync(username, password);
+                
                 if(user == null)
                 {
                     throw new Exception("The username or password is incorrect.");
                 }
-                if(user.Role == UserRole.Admin)
-                {
-                    var form = new UserForm(_exercise, _muscleGroup, _workout, _workoutExercise, _workoutSession, _workoutSet);
-                    this.Hide();
-                    var result = form.ShowDialog();
-                    this.Show();
-                }
+
+                var form = new UserForm();
+                this.Hide();
+                form.ShowDialog();
+                this.Show();
+                
+                textBox1.Text = string.Empty;
+                textBox2.Text = string.Empty;
             }
             catch(Exception x)
             {

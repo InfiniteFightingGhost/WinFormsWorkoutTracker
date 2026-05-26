@@ -40,11 +40,12 @@ namespace Data
             modelBuilder.Entity<WorkoutSession>(w =>
             {
                 w.Property(u => u.Status).HasConversion<string>();
+                w.Property(u => u.Id).ValueGeneratedOnAdd();
             });
 
             modelBuilder.Entity<WorkoutExercise>(e =>
             {
-                e.ToTable(t => t.HasCheckConstraint("CK_OrderIndex_Allowed", "[OrderIndex] > 0"));
+                e.ToTable(t => t.HasCheckConstraint("CK_OrderIndex_Allowed", "[OrderIndex] >= 0"));
             });
             modelBuilder.Entity<ExerciseSet>(es =>
             {
@@ -56,10 +57,6 @@ namespace Data
                       es.WorkoutExerciseId,
                       es.ExerciseId
                   });
-            });
-            modelBuilder.Entity<WorkoutSession>(ws =>
-            {
-                ws.ToTable(t => t.HasCheckConstraint("CK_Start_End", "[Start] <= [End]"));
             });
 
             modelBuilder.Entity<MuscleGroup>().HasData(
