@@ -15,11 +15,18 @@ namespace RealView.Views
         private FlowLayoutPanel _exercisesPanel = null!;
         private Button _addExerciseBtn = null!;
         private Button _finishBtn = null!;
+        private RestTimerView _restTimer = null!;
+
         public ActiveWorkoutView()
         {
             InitializeComponent();
             _timer = new System.Windows.Forms.Timer { Interval = 1000 };
             _timer.Tick += (s, e) => UpdateTimer();
+            
+            AppRuntime.WorkoutState.SetCompleted += (s, set) => {
+                if (this.InvokeRequired) this.Invoke(new Action(() => _restTimer.Start(90)));
+                else _restTimer.Start(90);
+            };
         }
 
         private void InitializeComponent()
@@ -32,6 +39,14 @@ namespace RealView.Views
                 AutoScroll = true,
                 WrapContents = false
             };
+
+            _restTimer = new RestTimerView
+            {
+                Visible = false,
+                Location = new Point(250, 10) // Positioned near top center
+            };
+            this.Controls.Add(_restTimer);
+            this.Controls.SetChildIndex(_restTimer, 0); // Ensure it's on top
 
             var header = new Panel { Width = 800, Height = 60, Margin = new Padding(0, 0, 0, 30) };
             
@@ -93,6 +108,39 @@ namespace RealView.Views
             _mainLayout.Controls.Add(header);
             _mainLayout.Controls.Add(_exercisesPanel);
             _mainLayout.Controls.Add(_addExerciseBtn);
+
+            var discardBtn = new Button
+            {
+                Text = "DISCARD WORKOUT",
+                Size = new Size(800, 50),
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = Color.IndianRed,
+                BackColor = Color.FromArgb(255, 235, 235),
+                Margin = new Padding(0, 0, 0, 100)
+            };
+            discardBtn.FlatAppearance.BorderColor = Color.IndianRed;
+            discardBtn.Click += async (s, e) => {
+                if (MessageBox.Show("Are you sure you want to discard this workout? This action cannot be undone.", "Discard", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    try
+                    {
+                        var session = AppRuntime.WorkoutState.ActiveSession;
+                        if (session != null)
+                        {
+                            await AppRuntime.WorkoutSession.DeleteSessionAsync(session.Id);
+                            _timer.Stop();
+                            AppRuntime.WorkoutState.FinishWorkout(); // This clears the active session from state
+                            AppRuntime.Navigation.NavigateTo<DashboardView>();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+            };
+            _mainLayout.Controls.Add(discardBtn);
 
             this.Controls.Add(_mainLayout);
         }
@@ -167,23 +215,15 @@ namespace RealView.Views
             }
         }
 
-        private async void FinishBtn_Click(object? sender, EventArgs e)
+        private void FinishBtn_Click(object? sender, EventArgs e)
         {
             if (MessageBox.Show("Are you sure you want to finish this workout?", "Finish", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
-                try
+                var session = AppRuntime.WorkoutState.ActiveSession;
+                if (session != null)
                 {
-                    var session = AppRuntime.WorkoutState.ActiveSession;
-                    await AppRuntime.WorkoutSession.UpdateWorkoutSession(session!.Id, DateTime.Now, "Completed");
-                    await AppRuntime.WorkoutSession.UpdateWorkoutSessionStatus(session.Id);
-                    
                     _timer.Stop();
-                    AppRuntime.WorkoutState.FinishWorkout();
-                    AppRuntime.Navigation.NavigateTo<DashboardView>();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
+                    AppRuntime.Navigation.NavigateTo<WorkoutSummaryView>(session);
                 }
             }
         }

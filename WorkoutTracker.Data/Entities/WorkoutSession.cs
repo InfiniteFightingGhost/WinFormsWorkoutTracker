@@ -30,6 +30,10 @@ namespace Data.Entities
         [Required]
         public WorkoutStatus Status { get; set; }
 
+        [StringLength(100)]
+        [Unicode(false)]
+        public string? Title { get; set; }
+
         [StringLength(200)]
         [Unicode(false)]
         public string? Notes { get; set; }

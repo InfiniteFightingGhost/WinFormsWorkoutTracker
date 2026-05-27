@@ -147,7 +147,7 @@ namespace WorkoutTracker.View.Views
                 try
                 {
                     var session = AppRuntime.WorkoutState.ActiveSession;
-                    await AppRuntime.WorkoutSession.UpdateWorkoutSession(session.Id, DateTime.Now, "Great workout!");
+                    await AppRuntime.WorkoutSession.UpdateWorkoutSession(session.Id, DateTime.Now, "Great workout!", null);
                     await AppRuntime.WorkoutSession.UpdateWorkoutSessionStatus(session.Id);
                     
                     _workoutTimer.Stop();

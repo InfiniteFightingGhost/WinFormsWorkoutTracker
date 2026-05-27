@@ -30,9 +30,6 @@ namespace View
             var user = AppRuntime.Auth.GetCurrentUser();
             if (user != null && user.Role == Data.Enums.UserRole.Admin)
             {
-                // Let's add a small admin button or hijack one for now.
-                // For a "modern" feel, maybe a floating button or just another nav item.
-                // Hijacking the label of panel2 if admin? No, let's just add it to the top or side.
                 var adminBtn = new Button { 
                     Text = "ADMIN", 
                     Dock = DockStyle.Top, 

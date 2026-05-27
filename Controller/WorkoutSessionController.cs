@@ -49,7 +49,7 @@ namespace Controller
             return _authController.GetCurrentUser().Sessions;
         }
 
-        public async Task<WorkoutSession> UpdateWorkoutSession(int id, DateTime end, string notes)
+        public async Task<WorkoutSession> UpdateWorkoutSession(int id, DateTime end, string? title, string? notes)
         {
             var session = await _context.WorkoutSessions.FindAsync(id);
             if (session == null)
@@ -60,12 +60,12 @@ namespace Controller
             {
                 throw new Exception("Workout end must be after the start.");
             }
-            if (notes == null)
-            {
-                throw new Exception("Notes cannot be null.");
-            }
+            
             session.End = end;
+            session.Title = title;
             session.Notes = notes;
+            session.Status = WorkoutStatus.Finished;
+            
             await _context.SaveChangesAsync();
             return session;
         }

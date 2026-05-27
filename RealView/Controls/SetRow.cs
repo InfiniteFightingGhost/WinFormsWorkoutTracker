@@ -110,13 +110,15 @@ namespace RealView.Controls
         private NumericUpDown _repsNum;
         private CheckBox _completedChk;
         private Label _setLabel;
+        private bool _isReadOnly;
 
-        public SetRow(ExerciseSet set, ExerciseCard parentCard)
+        public SetRow(ExerciseSet set, ExerciseCard parentCard, bool isReadOnly = false)
         {
             _set = set;
             _parentCard = parentCard;
+            _isReadOnly = isReadOnly;
             InitializeComponent();
-            SetupContextMenu();
+            if (!_isReadOnly) SetupContextMenu();
         }
 
         private void InitializeComponent()
@@ -128,7 +130,7 @@ namespace RealView.Controls
             {
                 Location = new Point(10, 10),
                 Width = 30,
-                Cursor = Cursors.Hand,
+                Cursor = _isReadOnly ? Cursors.Default : Cursors.Hand,
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -139,9 +141,11 @@ namespace RealView.Controls
                 Location = new Point(45, 8),
                 Width = 100,
                 DecimalPlaces = 1,
-                Maximum = 1000
+                Maximum = 1000,
+                ReadOnly = _isReadOnly,
+                Increment = _isReadOnly ? 0 : 1
             };
-            _weightNum.ValueChanged += (s, e) => SaveChanges();
+            if (!_isReadOnly) _weightNum.ValueChanged += (s, e) => SaveChanges();
 
             var kgLabel = new Label { Text = "kg", Location = new Point(150, 10), Width = 30, ForeColor = Color.Gray };
 
@@ -151,9 +155,11 @@ namespace RealView.Controls
                 Value = _set.Repetitions,
                 Location = new Point(185, 8),
                 Width = 100,
-                Maximum = 1000
+                Maximum = 1000,
+                ReadOnly = _isReadOnly,
+                Increment = _isReadOnly ? 0 : 1
             };
-            _repsNum.ValueChanged += (s, e) => SaveChanges();
+            if (!_isReadOnly) _repsNum.ValueChanged += (s, e) => SaveChanges();
 
             var repsLabel = new Label { Text = "reps", Location = new Point(290, 10), Width = 40, ForeColor = Color.Gray };
 
@@ -163,9 +169,10 @@ namespace RealView.Controls
                 Text = "Done",
                 Checked = _set.Completed,
                 Location = new Point(340, 8),
-                Width = 80
+                Width = 80,
+                Enabled = !_isReadOnly
             };
-            _completedChk.CheckedChanged += (s, e) => SaveChanges();
+            if (!_isReadOnly) _completedChk.CheckedChanged += (s, e) => SaveChanges();
 
             // 💡 Removed the "×" button completely. Deletion is now handled purely by the ContextMenu.
 
@@ -258,11 +265,16 @@ namespace RealView.Controls
         {
             _set.Weight = _weightNum.Value;
             _set.Repetitions = (int)_repsNum.Value;
+            bool wasCompleted = _set.Completed;
             _set.Completed = _completedChk.Checked;
 
             try
             {
                 await AppRuntime.WorkoutSet.UpdateExerciseSetAsync(_set);
+                if (!wasCompleted && _set.Completed)
+                {
+                    AppRuntime.WorkoutState.NotifySetCompleted(_set);
+                }
             }
             catch (Exception ex)
             {

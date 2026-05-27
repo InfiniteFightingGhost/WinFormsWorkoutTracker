@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
 using Data.Entities;
+using System.Threading.Tasks;
 
 namespace RealView.Views
 {
@@ -60,7 +61,9 @@ namespace RealView.Views
             var user = AppRuntime.Auth.GetCurrentUser();
             var sessions = await AppRuntime.WorkoutSession.GetAllUserSessionsAsync(user.Id);
             
-            foreach (var session in sessions.OrderByDescending(s => s.Start))
+            foreach (var session in sessions
+                .Where(s => s.Status == Data.Enums.WorkoutStatus.Finished)
+                .OrderByDescending(s => s.Start))
             {
                 _historyPanel.Controls.Add(CreateHistoryCard(session));
             }
@@ -73,24 +76,38 @@ namespace RealView.Views
                 Size = new Size(760, 120),
                 BackColor = Color.White,
                 Margin = new Padding(0, 0, 0, 15),
-                Padding = new Padding(20)
+                Padding = new Padding(20),
+                Cursor = Cursors.Hand
             };
+            panel.Click += (s, e) => AppRuntime.Navigation.NavigateTo<WorkoutDetailView>(session);
 
-            var dateLabel = new Label
+            var titleLabel = new Label
             {
-                Text = session.Start.ToString("f"),
+                Text = string.IsNullOrEmpty(session.Title) ? session.Start.ToString("f") : session.Title,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 Location = new Point(20, 20),
-                AutoSize = true
+                AutoSize = true,
+                Cursor = Cursors.Hand
             };
 
-            var duration = session.End.HasValue ? (session.End.Value - session.Start).ToString(@"hh\:mm") : "In Progress";
+            string durationStr;
+            if (session.End.HasValue)
+            {
+                var ts = session.End.Value - session.Start;
+                durationStr = ts.TotalHours >= 1 ? ts.ToString(@"hh\:mm\:ss") : ts.ToString(@"mm\:ss");
+            }
+            else
+            {
+                durationStr = "Active Session";
+            }
+
             var infoLabel = new Label
             {
-                Text = $"Duration: {duration} | Status: {session.Status}",
+                Text = $"Duration: {durationStr}",
                 Font = new Font("Segoe UI", 10),
                 Location = new Point(20, 50),
-                AutoSize = true
+                AutoSize = true,
+                Cursor = Cursors.Hand
             };
 
             var notesLabel = new Label
@@ -99,7 +116,8 @@ namespace RealView.Views
                 Font = new Font("Segoe UI", 9, FontStyle.Italic),
                 Location = new Point(20, 75),
                 AutoSize = true,
-                ForeColor = Color.DimGray
+                ForeColor = Color.DimGray,
+                Cursor = Cursors.Hand
             };
 
             var deleteBtn = new Button
@@ -117,10 +135,15 @@ namespace RealView.Views
                 }
             };
 
-            panel.Controls.Add(dateLabel);
+            panel.Controls.Add(titleLabel);
             panel.Controls.Add(infoLabel);
             panel.Controls.Add(notesLabel);
             panel.Controls.Add(deleteBtn);
+
+            foreach (Control c in panel.Controls)
+            {
+                if (c != deleteBtn) c.Click += (s, e) => AppRuntime.Navigation.NavigateTo<WorkoutDetailView>(session);
+            }
 
             panel.Paint += (s, e) => {
                 ControlPaint.DrawBorder(e.Graphics, panel.ClientRectangle, Color.LightGray, ButtonBorderStyle.Solid);

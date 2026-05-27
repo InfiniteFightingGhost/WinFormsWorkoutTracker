@@ -99,29 +99,6 @@ namespace RealView
                 _sidebarPanel.Controls.Add(spacer);
                 AddSidebarButton("Admin Panel", () => AppRuntime.Navigation.NavigateTo<Views.AdminDashboardView>(), Color.FromArgb(60, 64, 67));
             }
-
-            // Logout at the bottom (using a separate panel or just pushing it down)
-            var logoutSpacer = new Panel { Height = 100, Width = 250 }; // Basic push down
-            _sidebarPanel.Controls.Add(logoutSpacer);
-
-            var logoutBtn = new Button
-            {
-                Text = "Logout",
-                Size = new Size(250, 50),
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.IndianRed,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(20, 0, 0, 0)
-            };
-            logoutBtn.FlatAppearance.BorderSize = 0;
-            logoutBtn.Click += (s, e) => {
-                AppRuntime.Auth.Logout();
-                AppRuntime.Navigation.ClearCache();
-                SetSidebarVisible(false);
-                AppRuntime.Navigation.NavigateTo<Views.LoginView>();
-            };
-            _sidebarPanel.Controls.Add(logoutBtn);
         }
 
         private void AddSidebarButton(string text, Action onClick, Color? backColor = null)

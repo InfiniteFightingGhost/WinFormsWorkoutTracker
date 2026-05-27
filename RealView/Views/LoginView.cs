@@ -97,11 +97,6 @@ namespace RealView.Views
 
                 if (user != null)
                 {
-                    if (this.ParentForm is MainForm shell)
-                    {
-                        shell.SetSidebarVisible(true);
-                    }
-
                     //  Fetch any unresolved session from the database for this user
                     var activeSession = await AppRuntime.WorkoutSession.GetActiveSessionAsync(user.Id);
 
@@ -109,6 +104,11 @@ namespace RealView.Views
                     {
                         // Hydrate the global state manager with the existing session
                         AppRuntime.WorkoutState.ResumeWorkout(activeSession);
+                    }
+
+                    if (this.ParentForm is MainForm shell)
+                    {
+                        shell.SetSidebarVisible(true);
                     }
 
                     // Route to Dashboard, which will instantly pivot to ActiveWorkoutView if needed

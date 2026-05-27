@@ -7,6 +7,7 @@ namespace RealView.Services
     {
         public event EventHandler<WorkoutSession?>? WorkoutStarted;
         public event EventHandler<WorkoutSession?>? WorkoutFinished;
+        public event EventHandler<ExerciseSet>? SetCompleted;
         public event EventHandler<WorkoutSession?>? WorkoutUpdated;
 
         private WorkoutSession? _activeSession;
@@ -32,7 +33,7 @@ namespace RealView.Services
         public void ResumeWorkout(WorkoutSession session)
         {
             ActiveSession = session;
-            // Trigger any event listeners if your UI updates dynamically
+            WorkoutStarted?.Invoke(this, session);
         }
 
         public void FinishWorkout()
@@ -40,6 +41,14 @@ namespace RealView.Services
             var session = _activeSession;
             ActiveSession = null;
             WorkoutFinished?.Invoke(this, session);
+        }
+
+        public void NotifySetCompleted(ExerciseSet set)
+        {
+            if (set.Completed)
+            {
+                SetCompleted?.Invoke(this, set);
+            }
         }
     }
 }

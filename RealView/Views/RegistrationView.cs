@@ -18,6 +18,7 @@ namespace RealView.Views
         private TextBox _usernameTxt;
         private TextBox _emailTxt;
         private TextBox _passwordTxt;
+        private TextBox _confirmPasswordTxt;
         private Button _nextBtn;
 
         // Step 2
@@ -58,6 +59,7 @@ namespace RealView.Views
             _usernameTxt = CreateField("Username", step1Layout);
             _emailTxt = CreateField("Email", step1Layout);
             _passwordTxt = CreateField("Password", step1Layout, true);
+            _confirmPasswordTxt = CreateField("Confirm Password", step1Layout, true);
 
             _nextBtn = new Button
             {
@@ -74,7 +76,7 @@ namespace RealView.Views
 
             step1Layout.Controls.Add(_nextBtn);
             
-            var loginLink = new LinkLabel { Text = "Already have an account? Login", AutoSize = true, Margin = new Padding(0, 20, 0, 0) };
+            var loginLink = new LinkLabel { Text = "Already have an account? Sign in.", AutoSize = true, Margin = new Padding(0, 20, 0, 0) };
             loginLink.LinkClicked += (s, e) => AppRuntime.Navigation.NavigateTo<LoginView>();
             step1Layout.Controls.Add(loginLink);
 
@@ -145,6 +147,12 @@ namespace RealView.Views
             try
             {
                 _nextBtn.Enabled = false;
+
+                if (_passwordTxt.Text != _confirmPasswordTxt.Text)
+                {
+                    MessageBox.Show("Passwords do not match.");
+                    return;
+                }
                 
                 var dto = new CreateUserDTO
                 {

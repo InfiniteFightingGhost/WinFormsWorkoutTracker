@@ -18,6 +18,8 @@ namespace RealView.Controls
         public WorkoutExercise WorkoutExerciseModel => _workoutExercise;
 
         private bool _isSelected;
+        private bool _isReadOnly;
+
         public bool IsSelected
         {
             get => _isSelected;
@@ -28,9 +30,10 @@ namespace RealView.Controls
                 this.Invalidate();
             }
         }
-        public ExerciseCard(WorkoutExercise workoutExercise)
+        public ExerciseCard(WorkoutExercise workoutExercise, bool isReadOnly = false)
         {
             _workoutExercise = workoutExercise;
+            _isReadOnly = isReadOnly;
             InitializeComponent();
         }
 
@@ -76,17 +79,29 @@ namespace RealView.Controls
 
             // Context Menu Setup
             var contextMenu = new ContextMenuStrip();
-            var switchItem = contextMenu.Items.Add("Switch Exercise");
-            var removeItem = contextMenu.Items.Add("Remove");
+            var viewItem = contextMenu.Items.Add("View Exercise");
 
-            switchItem.Click += async (s, e) => await SwitchExerciseAsync();
-            removeItem.Click += async (s, e) => {
-                if (MessageBox.Show("Remove this exercise from workout?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            viewItem.Click += (s, e) => {
+                if (_workoutExercise.Exercise != null)
                 {
-                    await AppRuntime.WorkoutExercise.RemoveExerciseFromWorkoutAsync(_workoutExercise.WorkoutId, _workoutExercise.ExerciseId);
-                    this.Parent?.Controls.Remove(this);
+                    AppRuntime.Navigation.NavigateTo<Views.ExerciseDetailView>(_workoutExercise.Exercise);
                 }
             };
+
+            if (!_isReadOnly)
+            {
+                var switchItem = contextMenu.Items.Add("Switch Exercise");
+                var removeItem = contextMenu.Items.Add("Remove");
+
+                switchItem.Click += async (s, e) => await SwitchExerciseAsync();
+                removeItem.Click += async (s, e) => {
+                    if (MessageBox.Show("Remove this exercise from workout?", "Confirm", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        await AppRuntime.WorkoutExercise.RemoveExerciseFromWorkoutAsync(_workoutExercise.WorkoutId, _workoutExercise.ExerciseId);
+                        this.Parent?.Controls.Remove(this);
+                    }
+                };
+            }
 
             optionsBtn.Click += (s, e) => contextMenu.Show(optionsBtn, new Point(0, optionsBtn.Height));
 
@@ -110,7 +125,8 @@ namespace RealView.Controls
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.FromArgb(240, 242, 245),
                 Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                Margin = new Padding(0)
+                Margin = new Padding(0),
+                Visible = !_isReadOnly
             };
             _addSetButton.FlatAppearance.BorderSize = 0;
             _addSetButton.Click += AddSetButton_Click;
@@ -138,8 +154,12 @@ namespace RealView.Controls
             this.Click += (s, e) => CardSelected?.Invoke(this, EventArgs.Empty);
             headerPanel.Click += (s, e) => CardSelected?.Invoke(this, EventArgs.Empty);
             _nameLabel.Click += (s, e) => CardSelected?.Invoke(this, EventArgs.Empty);
-            headerPanel.MouseDown += InitiateDrag;
-            _nameLabel.MouseDown += InitiateDrag;
+            
+            if (!_isReadOnly)
+            {
+                headerPanel.MouseDown += InitiateDrag;
+                _nameLabel.MouseDown += InitiateDrag;
+            }
         }
         private void InitiateDrag(object? sender, MouseEventArgs e)
         {
@@ -166,8 +186,7 @@ namespace RealView.Controls
         }
         private void AddSetRow(ExerciseSet set)
         {
-            // ?? Pass 'this' (the ExerciseCard) into the SetRow directly
-            var row = new SetRow(set, this);
+            var row = new SetRow(set, this, _isReadOnly);
             _setsPanel.Controls.Add(row);
             UpdateSetNumbering();
         }
