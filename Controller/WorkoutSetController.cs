@@ -111,7 +111,7 @@ namespace Controller
                 .ToListAsync();
 
             var volume = sessions.SelectMany(s => s.Exercises)
-                .GroupBy(e => e.Exercise.MainMuscleGroup.Name)
+                .GroupBy(e => e.Exercise?.MainMuscleGroup?.Name ?? "Unknown")
                 .Select(g => new {
                     MuscleGroup = g.Key,
                     SetCount = g.SelectMany(we => we.Sets).Count(),

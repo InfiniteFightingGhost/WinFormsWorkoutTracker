@@ -37,6 +37,10 @@ namespace Data.Entities
         [StringLength(200)]
         [Unicode(false)]
         public string? Notes { get; set; }
+
+        [StringLength(255)]
+        public string? PhotoUrl { get; set; }
+
         [InverseProperty(nameof(WorkoutExercise.WorkoutSession))]
         public ICollection<WorkoutExercise> Exercises { get; set; }
     }

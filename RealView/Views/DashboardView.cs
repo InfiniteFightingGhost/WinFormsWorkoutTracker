@@ -132,16 +132,20 @@ namespace RealView.Views
             var chartArea = new Panel { Location = new Point(20, 60), Size = new Size(440, 220) };
             chartArea.Paint += (s, e) => {
                 var g = e.Graphics;
-                var data = volumeData.ToList();
+                var data = volumeData?.ToList() ?? new List<dynamic>();
                 if (!data.Any()) { g.DrawString("No data yet.", this.Font, Brushes.Gray, 10, 10); return; }
 
-                float maxVolume = (float)data.Max(v => (decimal)v.TotalVolume);
+                decimal maxVal = 0;
+                foreach (var v in data) {
+                    if (v.TotalVolume > maxVal) maxVal = (decimal)v.TotalVolume;
+                }
+                float maxVolume = (float)maxVal;
                 if (maxVolume == 0) maxVolume = 1;
 
                 for (int i = 0; i < data.Count && i < 6; i++) {
-                    float barWidth = (float)(decimal)data[i].TotalVolume / maxVolume * 300;
+                    float barWidth = (float)((decimal)data[i].TotalVolume) / maxVolume * 300;
                     g.FillRectangle(Brushes.DodgerBlue, 100, i * 35, barWidth, 25);
-                    g.DrawString(data[i].MuscleGroup, new Font("Segoe UI", 9), Brushes.Black, 0, i * 35 + 5);
+                    g.DrawString((string)data[i].MuscleGroup, new Font("Segoe UI", 9), Brushes.Black, 0, i * 35 + 5);
                     g.DrawString($"{data[i].TotalVolume:0}", new Font("Segoe UI", 8), Brushes.DimGray, 105 + barWidth, i * 35 + 5);
                 }
             };
@@ -176,14 +180,28 @@ namespace RealView.Views
             var panel = new Panel { Size = new Size(760, 100), BackColor = Color.White, Margin = new Padding(0, 0, 0, 15), Padding = new Padding(20), Cursor = Cursors.Hand };
             panel.Click += (s, e) => AppRuntime.Navigation.NavigateTo<WorkoutDetailView>(session);
 
-            var titleLabel = new Label { Text = string.IsNullOrEmpty(session.Title) ? session.Start.ToString("MMMM dd, yyyy") : session.Title, Font = new Font("Segoe UI", 12, FontStyle.Bold), Location = new Point(20, 20), AutoSize = true };
+            if (!string.IsNullOrEmpty(session.PhotoUrl))
+            {
+                var pic = new PictureBox
+                {
+                    Size = new Size(60, 60),
+                    Location = new Point(20, 20),
+                    SizeMode = PictureBoxSizeMode.Zoom,
+                    Image = Services.PhotoService.LoadPhoto(session.PhotoUrl),
+                    BackColor = Color.FromArgb(240, 240, 240)
+                };
+                panel.Controls.Add(pic);
+            }
+
+            int textLeft = string.IsNullOrEmpty(session.PhotoUrl) ? 20 : 100;
+            var titleLabel = new Label { Text = string.IsNullOrEmpty(session.Title) ? session.Start.ToString("MMMM dd, yyyy") : session.Title, Font = new Font("Segoe UI", 12, FontStyle.Bold), Location = new Point(textLeft, 20), AutoSize = true };
             
             string durationStr = "N/A";
             if (session.End.HasValue) {
                 var ts = session.End.Value - session.Start;
                 durationStr = ts.TotalHours >= 1 ? ts.ToString(@"hh\:mm\:ss") : ts.ToString(@"mm\:ss");
             }
-            var infoLabel = new Label { Text = $"Duration: {durationStr}", Font = new Font("Segoe UI", 10), Location = new Point(20, 50), AutoSize = true, ForeColor = Color.Gray };
+            var infoLabel = new Label { Text = $"Duration: {durationStr}", Font = new Font("Segoe UI", 10), Location = new Point(textLeft, 50), AutoSize = true, ForeColor = Color.Gray };
 
             panel.Controls.Add(titleLabel);
             panel.Controls.Add(infoLabel);

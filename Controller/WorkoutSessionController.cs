@@ -49,7 +49,7 @@ namespace Controller
             return _authController.GetCurrentUser().Sessions;
         }
 
-        public async Task<WorkoutSession> UpdateWorkoutSession(int id, DateTime end, string? title, string? notes)
+        public async Task<WorkoutSession> UpdateWorkoutSession(int id, DateTime end, string? title, string? notes, string? photoUrl = null)
         {
             var session = await _context.WorkoutSessions.FindAsync(id);
             if (session == null)
@@ -64,6 +64,7 @@ namespace Controller
             session.End = end;
             session.Title = title;
             session.Notes = notes;
+            session.PhotoUrl = photoUrl;
             session.Status = WorkoutStatus.Finished;
             
             await _context.SaveChangesAsync();

@@ -10,9 +10,12 @@ namespace RealView.Controls
     {
         private WorkoutExercise _workoutExercise;
         private Label _nameLabel;
+        private Label _restTimerLabel = null!;
         private FlowLayoutPanel _setsPanel;
         private Button _addSetButton;
         private FlowLayoutPanel _mainLayout;
+        private System.Windows.Forms.Timer? _internalRestTimer;
+        private int _restSecondsRemaining;
 
         public event EventHandler? CardSelected;
         public WorkoutExercise WorkoutExerciseModel => _workoutExercise;
@@ -35,6 +38,45 @@ namespace RealView.Controls
             _workoutExercise = workoutExercise;
             _isReadOnly = isReadOnly;
             InitializeComponent();
+
+            if (!isReadOnly)
+            {
+                _internalRestTimer = new System.Windows.Forms.Timer { Interval = 1000 };
+                _internalRestTimer.Tick += InternalRestTimer_Tick;
+                AppRuntime.WorkoutState.SetCompleted += WorkoutState_SetCompleted;
+            }
+        }
+
+        private void WorkoutState_SetCompleted(object? sender, ExerciseSet set)
+        {
+            // Only start timer if it was a set from THIS exercise
+            if (set.ExerciseId == _workoutExercise.ExerciseId)
+            {
+                _restSecondsRemaining = 90; // Default 90s
+                UpdateRestTimerDisplay();
+                _restTimerLabel.Visible = true;
+                _internalRestTimer?.Start();
+            }
+        }
+
+        private void InternalRestTimer_Tick(object? sender, EventArgs e)
+        {
+            _restSecondsRemaining--;
+            if (_restSecondsRemaining <= 0)
+            {
+                _internalRestTimer?.Stop();
+                _restTimerLabel.Visible = false;
+            }
+            else
+            {
+                UpdateRestTimerDisplay();
+            }
+        }
+
+        private void UpdateRestTimerDisplay()
+        {
+            var ts = TimeSpan.FromSeconds(_restSecondsRemaining);
+            _restTimerLabel.Text = $"Rest: {ts.ToString(@"mm\:ss")}";
         }
 
         private void InitializeComponent()
@@ -63,6 +105,21 @@ namespace RealView.Controls
                 Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 AutoSize = true,
                 Location = new Point(0, 5)
+            };
+
+            _restTimerLabel = new Label
+            {
+                Text = "Rest: 01:30",
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                ForeColor = Color.FromArgb(0, 120, 215), // Professional Blue
+                AutoSize = true,
+                Visible = false,
+                Location = new Point(200, 10) // Positioned after name
+            };
+
+            // Dynamic positioning based on name length
+            _nameLabel.SizeChanged += (s, e) => {
+                _restTimerLabel.Left = _nameLabel.Right + 10;
             };
 
             var optionsBtn = new Button
@@ -106,6 +163,7 @@ namespace RealView.Controls
             optionsBtn.Click += (s, e) => contextMenu.Show(optionsBtn, new Point(0, optionsBtn.Height));
 
             headerPanel.Controls.Add(_nameLabel);
+            headerPanel.Controls.Add(_restTimerLabel);
             headerPanel.Controls.Add(optionsBtn);
 
             _setsPanel = new FlowLayoutPanel

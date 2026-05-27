@@ -34,6 +34,9 @@ namespace Data.Entities
         [Required]
         public UserRole Role { get; set; }
 
+        [StringLength(255)]
+        public string? PhotoUrl { get; set; }
+
         public ICollection<WorkoutSession> Sessions { get; set; } = new List<WorkoutSession>();
     }
 }

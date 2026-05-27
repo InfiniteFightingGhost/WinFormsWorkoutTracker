@@ -15,18 +15,12 @@ namespace RealView.Views
         private FlowLayoutPanel _exercisesPanel = null!;
         private Button _addExerciseBtn = null!;
         private Button _finishBtn = null!;
-        private RestTimerView _restTimer = null!;
 
         public ActiveWorkoutView()
         {
             InitializeComponent();
             _timer = new System.Windows.Forms.Timer { Interval = 1000 };
             _timer.Tick += (s, e) => UpdateTimer();
-            
-            AppRuntime.WorkoutState.SetCompleted += (s, set) => {
-                if (this.InvokeRequired) this.Invoke(new Action(() => _restTimer.Start(90)));
-                else _restTimer.Start(90);
-            };
         }
 
         private void InitializeComponent()
@@ -39,14 +33,6 @@ namespace RealView.Views
                 AutoScroll = true,
                 WrapContents = false
             };
-
-            _restTimer = new RestTimerView
-            {
-                Visible = false,
-                Location = new Point(250, 10) // Positioned near top center
-            };
-            this.Controls.Add(_restTimer);
-            this.Controls.SetChildIndex(_restTimer, 0); // Ensure it's on top
 
             var header = new Panel { Width = 800, Height = 60, Margin = new Padding(0, 0, 0, 30) };
             

@@ -9,6 +9,7 @@ namespace RealView.Views
         private Panel _card;
         private NumericUpDown _heightNum = null!;
         private NumericUpDown _weightNum = null!;
+        private PictureBox _profilePic = null!;
 
         public SettingsView()
         {
@@ -21,7 +22,7 @@ namespace RealView.Views
 
             _card = new Panel
             {
-                Size = new Size(500, 600),
+                Size = new Size(500, 750), // Increased height for photo
                 BackColor = Color.White,
                 Padding = new Padding(40)
             };
@@ -47,8 +48,30 @@ namespace RealView.Views
 
             var user = AppRuntime.Auth.GetCurrentUser();
 
+            // Profile Photo Section
+            var photoLabel = new Label { Text = "PROFILE PHOTO", Font = new Font("Segoe UI", 9, FontStyle.Bold), ForeColor = Color.Gray, Margin = new Padding(0, 0, 0, 10) };
+            _profilePic = new PictureBox
+            {
+                Size = new Size(100, 100),
+                SizeMode = PictureBoxSizeMode.Zoom,
+                BackColor = Color.FromArgb(240, 240, 240),
+                BorderStyle = BorderStyle.FixedSingle,
+                Image = Services.PhotoService.LoadPhoto(user?.PhotoUrl),
+                Margin = new Padding(0, 0, 0, 10)
+            };
+            
+            var updatePhotoBtn = new Button
+            {
+                Text = "CHANGE PHOTO",
+                Size = new Size(150, 30),
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 8, FontStyle.Bold),
+                Margin = new Padding(0, 0, 0, 20)
+            };
+            updatePhotoBtn.Click += UpdatePhotoBtn_Click;
+
             // Account Section
-            var accountLabel = new Label { Text = "ACCOUNT", Font = new Font("Segoe UI", 9, FontStyle.Bold), ForeColor = Color.Gray, Margin = new Padding(0, 0, 0, 10) };
+            var accountLabel = new Label { Text = "ACCOUNT", Font = new Font("Segoe UI", 9, FontStyle.Bold), ForeColor = Color.Gray, Margin = new Padding(0, 10, 0, 10) };
             var usernameLabel = new Label { Text = $"Username: {user?.Username}", Font = new Font("Segoe UI", 11), AutoSize = true, Margin = new Padding(0, 0, 0, 5) };
             var emailLabel = new Label { Text = $"Email: {user?.Email}", Font = new Font("Segoe UI", 11), AutoSize = true, Margin = new Padding(0, 0, 0, 20) };
 
@@ -91,6 +114,9 @@ namespace RealView.Views
             };
 
             layout.Controls.Add(title);
+            layout.Controls.Add(photoLabel);
+            layout.Controls.Add(_profilePic);
+            layout.Controls.Add(updatePhotoBtn);
             layout.Controls.Add(accountLabel);
             layout.Controls.Add(usernameLabel);
             layout.Controls.Add(emailLabel);
@@ -105,6 +131,27 @@ namespace RealView.Views
             _card.Paint += (s, e) => {
                 ControlPaint.DrawBorder(e.Graphics, _card.ClientRectangle, Color.LightGray, ButtonBorderStyle.Solid);
             };
+        }
+
+        private async void UpdatePhotoBtn_Click(object? sender, EventArgs e)
+        {
+            using (var ofd = new OpenFileDialog { Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp" })
+            {
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    var user = AppRuntime.Auth.GetCurrentUser();
+                    if (user == null) return;
+
+                    string? localPath = Services.PhotoService.SavePhoto(ofd.FileName, "Users");
+                    if (localPath != null)
+                    {
+                        await AppRuntime.User.UpdatePhotoAsync(user.Id, localPath);
+                        user.PhotoUrl = localPath; // Update local state
+                        _profilePic.Image = Services.PhotoService.LoadPhoto(localPath);
+                        MessageBox.Show("Photo updated!");
+                    }
+                }
+            }
         }
 
         private NumericUpDown CreateNumericInput(string label, decimal value, decimal max, FlowLayoutPanel container)

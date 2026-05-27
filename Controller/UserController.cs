@@ -81,6 +81,19 @@ namespace Controller
             return user;
         }
 
+        public async Task<User?> UpdatePhotoAsync(int id, string photoUrl)
+        {
+            _auth.IsAuthenticated(UserRole.Admin, id);
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+            user.PhotoUrl = photoUrl;
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
         public async Task<User?> DeleteAsync(int id)
         {
             _auth.IsAuthenticated(UserRole.Admin, id);
