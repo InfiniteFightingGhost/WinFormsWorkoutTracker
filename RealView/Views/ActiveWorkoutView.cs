@@ -186,16 +186,23 @@ namespace RealView.Views
                     try
                     {
                         var session = AppRuntime.WorkoutState.ActiveSession;
-                        var workoutEx = await AppRuntime.WorkoutExercise.AddExerciseToWorkoutAsync(session!.Id, dialog.SelectedExercise.Id);
+                        if (session == null) return;
+
+                        var workoutEx = await AppRuntime.WorkoutExercise.AddExerciseToWorkoutAsync(session.Id, dialog.SelectedExercise.Id);
                         
                         // Manually attach exercise for display
                         workoutEx.Exercise = dialog.SelectedExercise;
                         
-                        _exercisesPanel.Controls.Add(new ExerciseCard(workoutEx));
+                        // Sync with in-memory model to avoid duplicates on refresh
+                        session.Exercises ??= new List<WorkoutExercise>();
+                        session.Exercises.Add(workoutEx);
+
+                        // Clear and reload to ensure order and state are consistent
+                        LoadExercises();
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message);
+                        AppRuntime.Toasts.Show(ex.Message, true);
                     }
                 }
             }
@@ -209,7 +216,7 @@ namespace RealView.Views
                 if (session != null)
                 {
                     _timer.Stop();
-                    AppRuntime.Navigation.NavigateTo<WorkoutSummaryView>(session);
+                    AppRuntime.Navigation.NavigateTo<FinishWorkoutView>(session);
                 }
             }
         }

@@ -131,7 +131,8 @@ namespace RealView.Controls
                 Location = new Point(10, 10),
                 Width = 30,
                 Cursor = _isReadOnly ? Cursors.Default : Cursors.Hand,
-                TextAlign = ContentAlignment.MiddleCenter
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = UIStyle.CaptionBold
             };
 
             // 💡 Increased width from 80 to 100, shifted right slightly
@@ -143,11 +144,21 @@ namespace RealView.Controls
                 DecimalPlaces = 1,
                 Maximum = 1000,
                 ReadOnly = _isReadOnly,
-                Increment = _isReadOnly ? 0 : 1
+                Increment = _isReadOnly ? 0 : 1,
+                Font = UIStyle.Body
             };
-            if (!_isReadOnly) _weightNum.ValueChanged += (s, e) => SaveChanges();
+            if (!_isReadOnly) 
+            {
+                _weightNum.ValueChanged += (s, e) => SaveChanges();
+                _weightNum.KeyDown += (s, e) => {
+                    if (e.KeyCode == Keys.Enter) {
+                        _repsNum.Focus();
+                        e.Handled = e.SuppressKeyPress = true;
+                    }
+                };
+            }
 
-            var kgLabel = new Label { Text = "kg", Location = new Point(150, 10), Width = 30, ForeColor = Color.Gray };
+            var kgLabel = new Label { Text = "kg", Location = new Point(150, 10), Width = 30, ForeColor = UIStyle.TextSecondary, Font = UIStyle.Caption };
 
             // 💡 Increased width from 70 to 100, dynamically shifted over
             _repsNum = new NumericUpDown
@@ -157,11 +168,21 @@ namespace RealView.Controls
                 Width = 100,
                 Maximum = 1000,
                 ReadOnly = _isReadOnly,
-                Increment = _isReadOnly ? 0 : 1
+                Increment = _isReadOnly ? 0 : 1,
+                Font = UIStyle.Body
             };
-            if (!_isReadOnly) _repsNum.ValueChanged += (s, e) => SaveChanges();
+            if (!_isReadOnly) 
+            {
+                _repsNum.ValueChanged += (s, e) => SaveChanges();
+                _repsNum.KeyDown += (s, e) => {
+                    if (e.KeyCode == Keys.Enter) {
+                        _parentCard.FocusNextSet(this);
+                        e.Handled = e.SuppressKeyPress = true;
+                    }
+                };
+            }
 
-            var repsLabel = new Label { Text = "reps", Location = new Point(290, 10), Width = 40, ForeColor = Color.Gray };
+            var repsLabel = new Label { Text = "reps", Location = new Point(290, 10), Width = 40, ForeColor = UIStyle.TextSecondary, Font = UIStyle.Caption };
 
             // 💡 Expanded width to give the click target a larger footprint
             _completedChk = new CheckBox
@@ -170,11 +191,11 @@ namespace RealView.Controls
                 Checked = _set.Completed,
                 Location = new Point(340, 8),
                 Width = 80,
-                Enabled = !_isReadOnly
+                Enabled = !_isReadOnly,
+                Font = UIStyle.CaptionBold,
+                ForeColor = UIStyle.TextPrimary
             };
             if (!_isReadOnly) _completedChk.CheckedChanged += (s, e) => SaveChanges();
-
-            // 💡 Removed the "×" button completely. Deletion is now handled purely by the ContextMenu.
 
             this.Controls.Add(_setLabel);
             this.Controls.Add(_weightNum);
@@ -182,6 +203,13 @@ namespace RealView.Controls
             this.Controls.Add(_repsNum);
             this.Controls.Add(repsLabel);
             this.Controls.Add(_completedChk);
+        }
+
+        public void FocusWeight()
+        {
+            _weightNum.Focus();
+            // Select all text for easy editing
+            _weightNum.Select(0, _weightNum.Text.Length);
         }
 
         private void SetupContextMenu()

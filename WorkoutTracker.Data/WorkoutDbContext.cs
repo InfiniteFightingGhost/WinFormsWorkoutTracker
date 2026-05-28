@@ -104,7 +104,7 @@ namespace Data
             var config = new ConfigurationBuilder();
             config.AddJsonFile("appsettings.json");
             var build = config.Build();
-            optionsBuilder.UseSqlServer(build.GetConnectionString("DaskaloConnection"));
+            optionsBuilder.UseSqlServer(build.GetConnectionString("Daskalo2Connection"));
         }
     }
 }

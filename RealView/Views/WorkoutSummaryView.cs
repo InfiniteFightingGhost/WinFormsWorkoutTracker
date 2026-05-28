@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using Data.Entities;
 using System.Threading.Tasks;
+using RealView.Controls;
 
 namespace RealView.Views
 {
@@ -14,6 +17,7 @@ namespace RealView.Views
         private int _currentCardIndex = 0;
         private List<SummaryCard> _cards = new List<SummaryCard>();
         private Label _paginationLabel = null!;
+        private Label _subtitleLbl = null!;
         private Button _doneBtn = null!;
         private string? _sessionPhotoUrl = null;
 
@@ -21,24 +25,20 @@ namespace RealView.Views
         {
             _session = session;
             InitializeComponent();
-            LoadCards();
         }
 
-        private async void InitializeComponent()
+        private void InitializeComponent()
         {
             this.BackColor = Color.FromArgb(245, 247, 251);
-            var user = AppRuntime.Auth.GetCurrentUser();
-            var sessions = await AppRuntime.WorkoutSession.GetAllUserSessionsAsync(user.Id);
-            int workoutCount = sessions.Count + 1; // Including this one
 
             // 1. Top Celebration Header
             var header = new Panel { Dock = DockStyle.Top, Height = 140, Padding = new Padding(40, 20, 40, 0) };
             var niceWorkLbl = new Label { Text = "Nice work!", Font = new Font("Segoe UI", 32, FontStyle.Bold), AutoSize = true, Location = new Point(40, 15) };
-            var subtitleLbl = new Label { Text = $"This is your {workoutCount}nd workout", Font = new Font("Segoe UI Semibold", 13), ForeColor = Color.FromArgb(140, 140, 140), AutoSize = true, Location = new Point(42, 75) };
+            _subtitleLbl = new Label { Text = "Calculating...", Font = new Font("Segoe UI Semibold", 13), ForeColor = Color.FromArgb(140, 140, 140), AutoSize = true, Location = new Point(42, 75) };
             
             var celebIcon = new Button
             {
-                Text = "?",
+                Text = "✨",
                 Size = new Size(60, 60),
                 Location = new Point(this.Width - 110, 25),
                 FlatStyle = FlatStyle.Flat,
@@ -56,7 +56,7 @@ namespace RealView.Views
             };
 
             header.Controls.Add(niceWorkLbl);
-            header.Controls.Add(subtitleLbl);
+            header.Controls.Add(_subtitleLbl);
             header.Controls.Add(celebIcon);
             this.Controls.Add(header);
 
@@ -66,8 +66,8 @@ namespace RealView.Views
             _carouselContainer.Controls.Add(_cardsPanel);
             this.Controls.Add(_carouselContainer);
 
-            var prevBtn = new Button { Text = "??", Size = new Size(45, 45), Location = new Point(_carouselContainer.Left - 60, 415), FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = Color.Gray };
-            var nextBtn = new Button { Text = "??", Size = new Size(45, 45), Location = new Point(_carouselContainer.Right + 15, 415), FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = Color.Gray };
+            var prevBtn = new Button { Text = "◀", Size = new Size(45, 45), Location = new Point(_carouselContainer.Left - 60, 415), FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = Color.Gray };
+            var nextBtn = new Button { Text = "▶", Size = new Size(45, 45), Location = new Point(_carouselContainer.Right + 15, 415), FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = Color.Gray };
             prevBtn.FlatAppearance.BorderSize = 0;
             nextBtn.FlatAppearance.BorderSize = 0;
             prevBtn.Click += (s, e) => NavigateCarousel(-1);
@@ -76,7 +76,7 @@ namespace RealView.Views
             this.Controls.Add(nextBtn);
 
             // 3. Pagination & Sharing
-            _paginationLabel = new Label { Text = "? ? ?", Font = new Font("Segoe UI", 18), AutoSize = true, Location = new Point((this.Width - 80) / 2, 720), ForeColor = Color.LightGray };
+            _paginationLabel = new Label { Text = "• • •", Font = new Font("Segoe UI", 18), AutoSize = true, Location = new Point((this.Width - 80) / 2, 720), ForeColor = Color.LightGray };
             this.Controls.Add(_paginationLabel);
 
             var sharePrompt = new Label { Text = "Share workout - Tag @hevyapp", Font = new Font("Segoe UI Semibold", 10), ForeColor = Color.FromArgb(160, 160, 160), AutoSize = true, Location = new Point((this.Width - 180) / 2, 765) };
@@ -92,7 +92,7 @@ namespace RealView.Views
                     Location = new Point(20, 0),
                     FlatStyle = FlatStyle.Flat, 
                     BackColor = Color.White,
-                    Text = "?"
+                    Text = "⚡"
                 };
                 btn.FlatAppearance.BorderColor = Color.FromArgb(230, 230, 230);
                 // Circle button
@@ -112,12 +112,12 @@ namespace RealView.Views
             // 4. Bottom Action Button
             _doneBtn = new Button
             {
-                Text = "Done",
+                Text = "DONE",
                 Size = new Size(400, 60),
-                BackColor = Color.FromArgb(0, 120, 215),
+                BackColor = UIStyle.Primary,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                Font = UIStyle.SubHeader,
                 Location = new Point((this.Width - 400) / 2, this.Height - 100),
                 Cursor = Cursors.Hand
             };
@@ -134,28 +134,13 @@ namespace RealView.Views
                     _doneBtn.Region = new Region(path);
                 }
             };
-            _doneBtn.Click += DoneBtn_Click;
+            _doneBtn.Click += (s, e) => AppRuntime.Navigation.NavigateTo<DashboardView>();
             this.Controls.Add(_doneBtn);
-
-            var addPhotoBtn = new Button
-            {
-                Text = "?? ADD PHOTO",
-                Size = new Size(150, 45),
-                FlatStyle = FlatStyle.Flat,
-                BackColor = Color.White,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                ForeColor = Color.FromArgb(0, 120, 215)
-            };
-            addPhotoBtn.FlatAppearance.BorderColor = Color.FromArgb(0, 120, 215);
-            addPhotoBtn.Click += AddPhotoBtn_Click;
-            this.Controls.Add(addPhotoBtn);
 
             this.Resize += (s, e) => {
                 _carouselContainer.Left = (this.Width - _carouselContainer.Width) / 2;
                 prevBtn.Left = _carouselContainer.Left - 60;
                 nextBtn.Left = _carouselContainer.Right + 15;
-                addPhotoBtn.Left = _carouselContainer.Right - 150;
-                addPhotoBtn.Top = 670;
                 _paginationLabel.Left = (this.Width - _paginationLabel.Width) / 2;
                 sharePrompt.Left = (this.Width - sharePrompt.Width) / 2;
                 shareButtonsPanel.Left = (this.Width - shareButtonsPanel.Width) / 2;
@@ -164,6 +149,22 @@ namespace RealView.Views
                 celebIcon.Left = this.Width - 110;
             };
         }
+
+        public override async void OnNavigatedTo()
+        {
+            await LoadDataAsync();
+        }
+
+        private async Task LoadDataAsync()
+        {
+            var user = AppRuntime.Auth.GetCurrentUser();
+            if (user == null) return;
+
+            var sessions = await AppRuntime.WorkoutSession.GetAllUserSessionsAsync(user.Id);
+            int workoutCount = sessions.Count; // Count already includes the finished one
+            _subtitleLbl.Text = $"This is your {workoutCount}nd workout";
+
+            await LoadCardsAsync();
         }
 
         private void NavigateCarousel(int direction)
@@ -177,9 +178,12 @@ namespace RealView.Views
             UpdatePaginationDots();
         }
 
-        private async void LoadCards()
+        private async Task LoadCardsAsync()
         {
+            _cards.Clear();
+            _cardsPanel.Controls.Clear();
             var user = AppRuntime.Auth.GetCurrentUser();
+            if (user == null) return;
             
             // 1. Completion Card (Total Volume)
             decimal totalVolume = 0;
@@ -255,42 +259,9 @@ namespace RealView.Views
             for (int i = 0; i < _cards.Count; i++)
             {
                 // Use a more visual dot
-                dots += (i == _currentCardIndex) ? " ? " : " ? ";
+                dots += (i == _currentCardIndex) ? " ● " : " ○ ";
             }
             _paginationLabel.Text = dots;
-        }
-
-        private void AddPhotoBtn_Click(object? sender, EventArgs e)
-        {
-            using (var ofd = new OpenFileDialog { Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp" })
-            {
-                if (ofd.ShowDialog() == DialogResult.OK)
-                {
-                    _sessionPhotoUrl = Services.PhotoService.SavePhoto(ofd.FileName, "Workouts");
-                    if (_sessionPhotoUrl != null)
-                    {
-                        MessageBox.Show("Photo attached to workout!");
-                    }
-                }
-            }
-        }
-
-        private async void DoneBtn_Click(object? sender, EventArgs e)
-        {
-            try
-            {
-                _doneBtn.Enabled = false;
-                // Finalize session with title and photo
-                await AppRuntime.WorkoutSession.UpdateWorkoutSession(_session.Id, DateTime.Now, _session.Title, _session.Notes, _sessionPhotoUrl);
-                
-                AppRuntime.WorkoutState.FinishWorkout();
-                AppRuntime.Navigation.NavigateTo<DashboardView>();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                _doneBtn.Enabled = true;
-            }
         }
     }
 }

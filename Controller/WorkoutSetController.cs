@@ -55,18 +55,38 @@ namespace Controller
             if (activeSession != null)
             {
                 var workoutEx = activeSession.Exercises.FirstOrDefault();
-                if (workoutEx != null)
+                if (workoutEx != null && workoutEx.Sets.Any())
                 {
-                    var uncompletedSets = workoutEx.Sets.Where(s => !s.Completed).ToList();
-                    if (uncompletedSets.Any())
+                    var completedSets = workoutEx.Sets.Where(s => s.Completed).ToList();
+                    if (completedSets.Any())
                     {
                         progress.Add(new ExerciseProgressDTO
                         {
-                            Date = DateTime.Now,
-                            MaxWeight = uncompletedSets.Max(s => s.Weight),
-                            MaxVolume = uncompletedSets.Max(s => s.Weight * s.Repetitions),
-                            IsPotential = true
+                            Date = activeSession.Start,
+                            MaxWeight = completedSets.Max(s => s.Weight),
+                            MaxVolume = completedSets.Max(s => s.Weight * s.Repetitions),
+                            IsPotential = false
                         });
+                    }
+
+                    var uncompletedSets = workoutEx.Sets.Where(s => !s.Completed).ToList();
+                    if (uncompletedSets.Any())
+                    {
+                        var potWeight = uncompletedSets.Max(s => s.Weight);
+                        var potVolume = uncompletedSets.Max(s => s.Weight * s.Repetitions);
+
+                        // Only add potential if it's at least equal to current max or actually better
+                        var currentMax = progress.Any() ? progress.Max(p => p.MaxWeight) : 0;
+                        if (potWeight >= currentMax)
+                        {
+                            progress.Add(new ExerciseProgressDTO
+                            {
+                                Date = DateTime.Now,
+                                MaxWeight = potWeight,
+                                MaxVolume = potVolume,
+                                IsPotential = true
+                            });
+                        }
                     }
                 }
             }

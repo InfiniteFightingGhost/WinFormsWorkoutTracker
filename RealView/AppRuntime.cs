@@ -18,6 +18,7 @@ namespace RealView
 
         public static NavigationService Navigation { get; set; } = null!;
         public static WorkoutStateService WorkoutState { get; private set; } = null!;
+        public static ToastService Toasts { get; private set; } = null!;
 
         public static void Initialize()
         {
@@ -32,6 +33,7 @@ namespace RealView
             WorkoutSet = new WorkoutSetController(Context);
 
             WorkoutState = new WorkoutStateService();
+            Toasts = new ToastService();
         }
     }
 }

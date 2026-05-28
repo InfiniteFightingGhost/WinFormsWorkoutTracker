@@ -262,6 +262,22 @@ namespace RealView.Controls
             }
         }
 
+        public void FocusNextSet(SetRow current)
+        {
+            bool found = false;
+            foreach (Control control in _setsPanel.Controls)
+            {
+                if (found && control is SetRow nextRow)
+                {
+                    nextRow.FocusWeight();
+                    return;
+                }
+                if (control == current) found = true;
+            }
+
+            // If we're at the end of this exercise, we could optionally focus the next ExerciseCard
+        }
+
         // ?? New standard public method for handling deletions
         public async Task RemoveSetAsync(SetRow row, ExerciseSet set)
         {

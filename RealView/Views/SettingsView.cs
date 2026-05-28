@@ -145,10 +145,10 @@ namespace RealView.Views
                     string? localPath = Services.PhotoService.SavePhoto(ofd.FileName, "Users");
                     if (localPath != null)
                     {
-                        await AppRuntime.User.UpdatePhotoAsync(user.Id, localPath);
-                        user.PhotoUrl = localPath; // Update local state
-                        _profilePic.Image = Services.PhotoService.LoadPhoto(localPath);
-                        MessageBox.Show("Photo updated!");
+                       await AppRuntime.User.UpdatePhotoAsync(user.Id, localPath);
+                       user.PhotoUrl = localPath; // Update local state
+                       _profilePic.Image = Services.PhotoService.LoadPhoto(localPath);
+                       AppRuntime.Toasts.Show("Photo updated!");
                     }
                 }
             }
