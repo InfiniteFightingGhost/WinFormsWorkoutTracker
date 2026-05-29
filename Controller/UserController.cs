@@ -1,111 +1,58 @@
-﻿using Data;
-using Data.DTOs;
-using Data.Entities;
+﻿using Data.Entities;
 using Data.Enums;
-using Microsoft.EntityFrameworkCore;
+using WorkoutTracker.Service.Interfaces;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Controller
 {
     public class UserController
     {
-        WorkoutDbContext _context;
-        AuthController _auth;
+        private readonly IUserService _userService;
 
-        public UserController(WorkoutDbContext context, AuthController auth)
+        public UserController(IUserService userService)
         {
-            _context = context;
-            _auth = auth;
+            _userService = userService;
         }
 
         public async Task<ICollection<User>> GetAllAsync()
         {
-            _auth.IsAuthenticated(UserRole.Admin);
-            return await _context.Users.ToListAsync();
+            return await _userService.GetAllAsync();
         }
 
         public async Task<User?> GetByIdAsync(int id)
         {
-            return await _context.Users.FindAsync(id);
+            return await _userService.GetByIdAsync(id);
         }
 
         public async Task<User?> UpdateHeightAsync(int id, decimal height)
         {
-            _auth.IsAuthenticated(UserRole.Admin, id);
-            var user = await _context.Users.FindAsync(id);
-            if(user == null)
-            {
-                throw new Exception("User not found.");
-            }
-            user.Height = height;
-            await _context.SaveChangesAsync();
-            return user;
+            return await _userService.UpdateHeightAsync(id, height);
         }
+
         public async Task<User?> UpdateWeightAsync(int id, decimal weight)
         {
-            _auth.IsAuthenticated(UserRole.Admin, id);
-            var user = await _context.Users.FindAsync(id);
-            if(user == null)
-            {
-                throw new Exception("User not found.");
-            }
-            user.Weight = weight;
-            await _context.SaveChangesAsync();
-            return user;
+            return await _userService.UpdateWeightAsync(id, weight);
         }
 
         public async Task<User?> UpdateGenderAsync(int id, Gender gender)
         {
-            _auth.IsAuthenticated(UserRole.Admin, id);
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                throw new Exception("User not found.");
-            }
-            user.Gender = gender;
-            await _context.SaveChangesAsync();
-            return user;
+            return await _userService.UpdateGenderAsync(id, gender);
         }
 
         public async Task<User?> UpdateProfileAsync(int id, Gender gender, decimal height, decimal weight)
         {
-            _auth.IsAuthenticated(UserRole.Admin, id);
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                throw new Exception("User not found.");
-            }
-            user.Gender = gender;
-            user.Height = height;
-            user.Weight = weight;
-            await _context.SaveChangesAsync();
-            return user;
+            return await _userService.UpdateProfileAsync(id, gender, height, weight);
         }
 
         public async Task<User?> UpdatePhotoAsync(int id, string photoUrl)
         {
-            _auth.IsAuthenticated(UserRole.Admin, id);
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                throw new Exception("User not found.");
-            }
-            user.PhotoUrl = photoUrl;
-            await _context.SaveChangesAsync();
-            return user;
+            return await _userService.UpdatePhotoAsync(id, photoUrl);
         }
 
         public async Task<User?> DeleteAsync(int id)
         {
-            _auth.IsAuthenticated(UserRole.Admin, id);
-
-            var user = await _context.Users.FindAsync(id);
-            if(user == null)
-            {
-                throw new Exception("User not found.");
-            }
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-            return user;
+            return await _userService.DeleteAsync(id);
         }
     }
 }

@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controller", "Controller\Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealView", "RealView\RealView.csproj", "{D2FC40CB-6711-4910-B82D-CFACFEB65021}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkoutTracker.Service", "WorkoutTracker.Service\WorkoutTracker.Service.csproj", "{11720BC6-0956-47BA-8757-61B2C88F7474}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{D2FC40CB-6711-4910-B82D-CFACFEB65021}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2FC40CB-6711-4910-B82D-CFACFEB65021}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2FC40CB-6711-4910-B82D-CFACFEB65021}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11720BC6-0956-47BA-8757-61B2C88F7474}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11720BC6-0956-47BA-8757-61B2C88F7474}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11720BC6-0956-47BA-8757-61B2C88F7474}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11720BC6-0956-47BA-8757-61B2C88F7474}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
