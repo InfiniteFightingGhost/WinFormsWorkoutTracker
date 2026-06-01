@@ -22,7 +22,7 @@ namespace RealView.Views
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 80));
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 20));
 
-            _grid = new DataGridView { Dock = DockStyle.Fill, BackgroundColor = Color.White, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, SelectionMode = DataGridViewSelectionMode.FullRowSelect, AllowUserToAddRows = false, ReadOnly = true };
+            _grid = new DataGridView { Dock = DockStyle.Fill, BackgroundColor = UIStyle.Surface, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, SelectionMode = DataGridViewSelectionMode.FullRowSelect, AllowUserToAddRows = false, ReadOnly = true };
             
             var editPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(10) };
             _nameTxt = new TextBox { Width = 200 };

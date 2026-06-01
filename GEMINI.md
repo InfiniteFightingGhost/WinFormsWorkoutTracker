@@ -14,9 +14,10 @@ The solution follows a multi-tier architecture:
 - **`WorkoutTracker.Service`**: The Business Logic Layer. Contains service interfaces and implementations where all business logic, data validation (FluentValidation), and complex data processing reside.
 - **`Controller`**: The API/Controller Layer. Thin wrappers that delegate requests to the Service layer. Controllers should not contain business logic or direct DB context usage.
 - **`RealView`**: The primary Presentation Layer. 
-    - **Custom Shell**: A borderless window with a custom title bar and sidebar.
-    - **Navigation**: Managed by `NavigationService` within a central `contentPanel`.
-    - **State**: `WorkoutStateService` manages the active workout session across views.
+    - **Custom Shell**: A natively resizable borderless window (via `WM_NCHITTEST` and `WS_THICKFRAME`) with a custom title bar and sidebar.
+    - **Responsive UI**: All views **MUST** implement `OnResize` to handle layout adjustments. Use breakpoints (e.g., 1000px for Sidebar mini-mode) and fluid containers (`FlowLayoutPanel`) to ensure the UI looks polished at any window size.
+    - **Skeleton Loaders**: Use `SkeletonCard` during data-intensive loads to improve perceived performance.
+    - **Navigation**: Managed by `NavigationService` within a central `contentPanel`. Navigations trigger a `Navigated` event used by the shell for state sync (like the sidebar indicator).
 
 ### Key Technologies & Services
 
@@ -38,9 +39,25 @@ The solution follows a multi-tier architecture:
 
 - **Build**: `dotnet build --nologo -v q --property WarningLevel=0 /clp:ErrorsOnly`
 - **Run**: `dotnet run --project RealView`
+- **Test**: `dotnet test Tests/Tests.csproj`
 - **Migrations**: `dotnet ef migrations add <Name> --project WorkoutTracker.Data --startup-project RealView`
 
 ## Development Conventions
+
+### Testing & TDD (MANDATORY)
+
+- **Test-Driven Development**: This project follows a TDD approach. **NO** new business logic or controller methods should be implemented without corresponding unit tests.
+- **Service Testing**: Use `Microsoft.EntityFrameworkCore.InMemory` for database interactions and `Moq` for dependencies (like `IAuthService` or `IValidator`).
+- **Controller Testing**: Controllers should be tested by injecting the actual service implementation (using an in-memory DB) to ensure the integration between thin controller wrappers and service logic is correct.
+- **Coverage**: Every public method in `WorkoutTracker.Service` and `Controller` projects must have at least one success case and relevant failure case (e.g., validation errors, unauthorized access) tests.
+
+### Technical Insights for Future Agents
+
+- **DbContext Configuration**: `WorkoutDbContext` must support a constructor taking `DbContextOptions<WorkoutDbContext>` to allow `InMemoryDatabase` injection in tests.
+- **Mocking Void Methods**: When using Moq to mock `void` methods (like `IAuthService.IsAuthenticated`), do **NOT** use `.Returns()`. Simply `Setup(x => x.Method())` is sufficient for a success path.
+- **Anonymous Types in Tests**: When a service returns `IEnumerable<dynamic>` with anonymous types, use **Reflection** in your assertions to access properties. The `dynamic` keyword can be unreliable in test projects due to assembly visibility issues.
+- **Required Fields**: Always check the Entity definitions for `[Required]` or non-nullable properties. Missing these during test data setup will cause `DbUpdateException` (Required properties are missing).
+- **Controller Naming**: Always verify the actual method names in Controllers before writing tests, as they may differ slightly from the Service layer (e.g., `GetWorkoutSetsAsync` vs `GetAllAsync`).
 
 ### Visual Standards (UIStyle)
 

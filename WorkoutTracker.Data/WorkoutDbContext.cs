@@ -7,6 +7,8 @@ namespace Data
 {
     public class WorkoutDbContext : DbContext
     {
+        public WorkoutDbContext() { }
+        public WorkoutDbContext(DbContextOptions<WorkoutDbContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Exercise> Exercises { get; set; }
@@ -101,10 +103,13 @@ namespace Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var config = new ConfigurationBuilder();
-            config.AddJsonFile("appsettings.json");
-            var build = config.Build();
-            optionsBuilder.UseSqlServer(build.GetConnectionString("Daskalo2Connection"));
+            if (!optionsBuilder.IsConfigured)
+            {
+                var config = new ConfigurationBuilder();
+                config.AddJsonFile("appsettings.json");
+                var build = config.Build();
+                optionsBuilder.UseSqlServer(build.GetConnectionString("Default"));
+            }
         }
     }
 }

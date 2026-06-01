@@ -5,12 +5,25 @@ using System.Windows.Forms;
 
 namespace RealView.Services
 {
+    public enum ToastType
+    {
+        Info,
+        Success,
+        Error
+    }
+
     public class ToastService
     {
-        public void Show(string message, bool isError = false)
+        public void Show(string message, ToastType type = ToastType.Info)
         {
-            var toast = new ToastForm(message, isError);
+            var toast = new ToastForm(message, type);
             toast.Show();
+        }
+
+        // Maintain backward compatibility for boolean parameter
+        public void Show(string message, bool isError)
+        {
+            Show(message, isError ? ToastType.Error : ToastType.Info);
         }
     }
 
@@ -22,19 +35,26 @@ namespace RealView.Services
         private int _targetY;
         private int _startY;
 
-        public ToastForm(string message, bool isError)
+        public ToastForm(string message, ToastType type)
         {
             this.FormBorderStyle = FormBorderStyle.None;
             this.ShowInTaskbar = false;
             this.TopMost = true;
             this.Size = new Size(300, 60);
-            this.BackColor = isError ? UIStyle.Danger : UIStyle.Primary;
+            
+            this.BackColor = type switch
+            {
+                ToastType.Success => UIStyle.Success,
+                ToastType.Error => UIStyle.Danger,
+                _ => UIStyle.Primary
+            };
+
             this.Opacity = 0;
 
             var lbl = new Label
             {
                 Text = message,
-                ForeColor = Color.White,
+                ForeColor = UIStyle.TextOnPrimary,
                 Font = UIStyle.BodySemibold,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter,

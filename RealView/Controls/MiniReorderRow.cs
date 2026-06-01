@@ -26,7 +26,7 @@ namespace RealView.Controls
             {
                 _isSelected = value;
                 // Highlight color when navigated via keyboard or click
-                this.BackColor = _isSelected ? Color.FromArgb(225, 240, 255) : Color.White;
+                this.BackColor = _isSelected ? UIStyle.Selection : UIStyle.Surface;
                 this.Invalidate();
             }
         }
@@ -41,15 +41,15 @@ namespace RealView.Controls
         {
             this.Size = new Size(360, 45);
             this.Margin = new Padding(0, 0, 0, 8);
-            this.BackColor = Color.White;
+            this.BackColor = UIStyle.Surface;
 
             var dragIcon = new Label
             {
                 Text = "↕",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
-                ForeColor = Color.Gray,
+                Font = UIStyle.SubHeader,
+                ForeColor = UIStyle.TextTertiary,
                 AutoSize = true,
-                Cursor = Cursors.SizeAll
+                Cursor = Cursors.Hand
             };
             // Vertically center it and anchor it to the left side (X = 10)
             dragIcon.Location = new Point(10, (this.Height - dragIcon.PreferredHeight) / 2);
@@ -57,7 +57,7 @@ namespace RealView.Controls
             var nameLabel = new Label
             {
                 Text = Model.Exercise?.Name ?? "Exercise",
-                Font = new Font("Segoe UI", 11, FontStyle.Regular),
+                Font = UIStyle.Body,
                 // Shift the text to the right to make room for the icon
                 Location = new Point(40, 12),
                 AutoSize = true
@@ -75,7 +75,7 @@ namespace RealView.Controls
             dragIcon.MouseDown += InitiateDrag;
 
             this.Paint += (s, e) => {
-                ControlPaint.DrawBorder(e.Graphics, this.ClientRectangle, Color.FromArgb(230, 230, 230), ButtonBorderStyle.Solid);
+                ControlPaint.DrawBorder(e.Graphics, this.ClientRectangle, UIStyle.Border, ButtonBorderStyle.Solid);
             };
         }
 
@@ -93,7 +93,7 @@ namespace RealView.Controls
                 this.GiveFeedback += Row_GiveFeedback;
 
                 var originalColor = this.BackColor;
-                this.BackColor = Color.FromArgb(240, 240, 240); // Dim the background item placeholder
+                this.BackColor = UIStyle.SurfaceVariant; // Dim the background item placeholder
 
                 this.DoDragDrop(this, DragDropEffects.Move);
 

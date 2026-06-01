@@ -13,22 +13,75 @@ namespace RealView.Views
         private TextBox _nameTxt = null!;
         private TextBox _descTxt = null!;
         private ComboBox _muscleGroupCb = null!;
+        private CheckedListBox _filterList = null!;
+        private TextBox _filterSearchTxt = null!;
+        private List<MuscleGroup> _initialFilters = new List<MuscleGroup>();
 
-        public ExerciseManagementView()
+        public ExerciseManagementView() : this(null) { }
+
+        public ExerciseManagementView(MuscleGroup? filter)
         {
+            if (filter != null) _initialFilters.Add(filter);
             InitializeComponent();
         }
 
         private void InitializeComponent()
         {
-            var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2 };
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 60));
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 40));
+            var mainLayout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 2 };
+            mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 250));
+            mainLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 60));
+            mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 40));
+
+            // LEFT FILTER PANEL
+            var filterPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(15), BackColor = UIStyle.SurfaceVariant };
+            var filterTitle = new Label { Text = "FILTERS", Font = UIStyle.CaptionBold, ForeColor = UIStyle.TextSecondary, Dock = DockStyle.Top, Height = 30 };
+            
+            _filterSearchTxt = new TextBox { 
+                Dock = DockStyle.Top, 
+                Font = UIStyle.Body, 
+                PlaceholderText = "Search by name..." 
+            };
+            _filterSearchTxt.TextChanged += async (s, e) => await RefreshData();
+
+            var spacer = new Panel { Dock = DockStyle.Top, Height = 15 };
+
+            _filterList = new CheckedListBox { 
+                Dock = DockStyle.Fill, 
+                BorderStyle = BorderStyle.None, 
+                BackColor = UIStyle.SurfaceVariant,
+                CheckOnClick = true,
+                DisplayMember = "Name",
+                Font = UIStyle.Body
+            };
+            _filterList.ItemCheck += (s, e) => {
+                // Use BeginInvoke to wait for the check state to actually change
+                this.BeginInvoke(new Action(async () => await RefreshData()));
+            };
+
+            var clearFiltersBtn = new Button { 
+                Text = "CLEAR ALL", 
+                Dock = DockStyle.Bottom, 
+                Height = 35, 
+                FlatStyle = FlatStyle.Flat,
+                Font = UIStyle.CaptionBold
+            };
+            clearFiltersBtn.Click += async (s, e) => {
+                _filterSearchTxt.Clear();
+                for (int i = 0; i < _filterList.Items.Count; i++) _filterList.SetItemChecked(i, false);
+                await RefreshData();
+            };
+
+            filterPanel.Controls.Add(_filterList);
+            filterPanel.Controls.Add(spacer);
+            filterPanel.Controls.Add(_filterSearchTxt);
+            filterPanel.Controls.Add(filterTitle);
+            filterPanel.Controls.Add(clearFiltersBtn);
 
             _grid = new DataGridView
             {
                 Dock = DockStyle.Fill,
-                BackgroundColor = Color.White,
+                BackgroundColor = UIStyle.Surface,
                 BorderStyle = BorderStyle.None,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
@@ -72,9 +125,11 @@ namespace RealView.Views
             topPanel.Controls.Add(_grid);
             topPanel.Controls.Add(btnPanel);
 
-            layout.Controls.Add(topPanel, 0, 0);
-            layout.Controls.Add(_editPanel, 0, 1);
-            this.Controls.Add(layout);
+            mainLayout.Controls.Add(filterPanel, 0, 0);
+            mainLayout.SetRowSpan(filterPanel, 2);
+            mainLayout.Controls.Add(topPanel, 1, 0);
+            mainLayout.Controls.Add(_editPanel, 1, 1);
+            this.Controls.Add(mainLayout);
         }
 
         private TextBox CreateInput(string label, Control container)
@@ -115,15 +170,45 @@ namespace RealView.Views
 
         public override async void OnNavigatedTo()
         {
-            await RefreshData();
             var mgs = await AppRuntime.MuscleGroup.GetMuscleGroupsAsync();
-            _muscleGroupCb.DataSource = mgs.ToList();
+            var mgList = mgs.ToList();
+            
+            _filterList.Items.Clear();
+            foreach (var mg in mgList)
+            {
+                int index = _filterList.Items.Add(mg);
+                if (_initialFilters.Any(f => f.Id == mg.Id))
+                {
+                    _filterList.SetItemChecked(index, true);
+                }
+            }
+            // Clear initial filters after first application
+            _initialFilters.Clear();
+
+            _muscleGroupCb.DataSource = mgList;
+            await RefreshData();
         }
 
         private async Task RefreshData()
         {
             var data = await AppRuntime.Exercise.GetAllExercisesAsync();
-            _grid.DataSource = data.ToList();
+            
+            var selectedGroups = _filterList.CheckedItems.Cast<MuscleGroup>().Select(g => g.Id).ToList();
+            var searchText = _filterSearchTxt.Text.Trim().ToLower();
+
+            IEnumerable<Exercise> filtered = data;
+            
+            if (selectedGroups.Any())
+            {
+                filtered = filtered.Where(e => selectedGroups.Contains(e.MuscleGroupId));
+            }
+
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                filtered = filtered.Where(e => e.Name.ToLower().Contains(searchText));
+            }
+            
+            _grid.DataSource = filtered.ToList();
         }
     }
 }

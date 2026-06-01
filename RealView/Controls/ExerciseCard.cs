@@ -29,7 +29,7 @@ namespace RealView.Controls
             set
             {
                 _isSelected = value;
-                this.BackColor = _isSelected ? Color.FromArgb(235, 245, 255) : Color.White; // Light blue highlight
+                this.BackColor = _isSelected ? UIStyle.Selection : UIStyle.Surface; // Light blue highlight
                 this.Invalidate();
             }
         }
@@ -45,6 +45,17 @@ namespace RealView.Controls
                 _internalRestTimer.Tick += InternalRestTimer_Tick;
                 AppRuntime.WorkoutState.SetCompleted += WorkoutState_SetCompleted;
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                AppRuntime.WorkoutState.SetCompleted -= WorkoutState_SetCompleted;
+                _internalRestTimer?.Stop();
+                _internalRestTimer?.Dispose();
+            }
+            base.Dispose(disposing);
         }
 
         private void WorkoutState_SetCompleted(object? sender, ExerciseSet set)
@@ -81,7 +92,7 @@ namespace RealView.Controls
 
         private void InitializeComponent()
         {
-            this.BackColor = Color.White;
+            this.BackColor = UIStyle.Surface;
             this.Padding = new Padding(15);
             this.Margin = new Padding(0, 0, 0, 15);
             this.Width = 460;
@@ -102,7 +113,8 @@ namespace RealView.Controls
             _nameLabel = new Label
             {
                 Text = _workoutExercise.Exercise?.Name ?? "Exercise",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Font = UIStyle.SubHeader,
+                ForeColor = UIStyle.TextPrimary,
                 AutoSize = true,
                 Location = new Point(0, 5)
             };
@@ -110,8 +122,8 @@ namespace RealView.Controls
             _restTimerLabel = new Label
             {
                 Text = "Rest: 01:30",
-                Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                ForeColor = Color.FromArgb(0, 120, 215), // Professional Blue
+                Font = UIStyle.CaptionBold,
+                ForeColor = UIStyle.ChartBlue, 
                 AutoSize = true,
                 Visible = false,
                 Location = new Point(200, 10) // Positioned after name
@@ -128,8 +140,8 @@ namespace RealView.Controls
                 Location = new Point(390, 0), // Shifted Y from 5 to 0 to account for larger font height
                 Size = new Size(30, 35),      // Made it slightly taller
                 FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.Gray,
-                Font = new Font("Segoe UI", 12, FontStyle.Bold), // Increased from 14 to 18
+                ForeColor = UIStyle.TextTertiary,
+                Font = UIStyle.SubHeader,
                 Cursor = Cursors.Hand
             };
             optionsBtn.FlatAppearance.BorderSize = 0;
@@ -181,8 +193,9 @@ namespace RealView.Controls
                 Text = "+ ADD SET",
                 Size = new Size(430, 35),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(240, 242, 245),
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                BackColor = UIStyle.SurfaceVariant,
+                ForeColor = UIStyle.TextPrimary,
+                Font = UIStyle.CaptionBold,
                 Margin = new Padding(0),
                 Visible = !_isReadOnly
             };
@@ -207,7 +220,7 @@ namespace RealView.Controls
             UpdateSetNumbering();
 
             this.Paint += (s, e) => {
-                ControlPaint.DrawBorder(e.Graphics, this.ClientRectangle, Color.FromArgb(220, 220, 220), ButtonBorderStyle.Solid);
+                ControlPaint.DrawBorder(e.Graphics, this.ClientRectangle, UIStyle.Border, ButtonBorderStyle.Solid);
             };
             this.Click += (s, e) => CardSelected?.Invoke(this, EventArgs.Empty);
             headerPanel.Click += (s, e) => CardSelected?.Invoke(this, EventArgs.Empty);
@@ -301,7 +314,13 @@ namespace RealView.Controls
             {
                 var newSet = await AppRuntime.WorkoutSet.CreateExerciseSetAsync(_workoutExercise.WorkoutId, _workoutExercise.ExerciseId);
                 _workoutExercise.Sets ??= new List<ExerciseSet>();
-                _workoutExercise.Sets.Add(newSet);
+
+                // Prevent duplication if the service/EF has already updated the tracked collection
+                if (!_workoutExercise.Sets.Any(s => s.Id == newSet.Id))
+                {
+                    _workoutExercise.Sets.Add(newSet);
+                }
+                
                 AddSetRow(newSet);
             }
             catch (Exception ex)

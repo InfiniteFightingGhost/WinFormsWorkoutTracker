@@ -36,12 +36,12 @@ namespace RealView.Views
 
         private void InitializeComponent()
         {
-            this.BackColor = Color.FromArgb(245, 247, 251);
+            this.BackColor = UIStyle.Background;
 
             _card = new Panel
             {
                 Size = new Size(500, 500),
-                BackColor = Color.White,
+                BackColor = UIStyle.Surface,
                 Padding = new Padding(40)
             };
 
@@ -53,7 +53,7 @@ namespace RealView.Views
             _step1Panel = new Panel { Dock = DockStyle.Fill, Visible = true };
             var step1Layout = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false };
             
-            var title1 = new Label { Text = "Account Details", Font = new Font("Segoe UI", 18, FontStyle.Bold), AutoSize = true, Margin = new Padding(0, 0, 0, 20) };
+            var title1 = new Label { Text = "Account Details", Font = UIStyle.SubHeader, AutoSize = true, Margin = new Padding(0, 0, 0, 20) };
             step1Layout.Controls.Add(title1);
 
             _usernameTxt = CreateField("Username", step1Layout);
@@ -66,17 +66,17 @@ namespace RealView.Views
                 Text = "NEXT",
                 Size = new Size(420, 50),
                 Margin = new Padding(0, 30, 0, 0),
-                BackColor = Color.FromArgb(0, 120, 215),
-                ForeColor = Color.White,
+                BackColor = UIStyle.Primary,
+                ForeColor = UIStyle.TextOnPrimary,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 11, FontStyle.Bold)
+                Font = UIStyle.BodySemibold
             };
             _nextBtn.FlatAppearance.BorderSize = 0;
             _nextBtn.Click += NextBtn_Click;
 
             step1Layout.Controls.Add(_nextBtn);
             
-            var loginLink = new LinkLabel { Text = "Already have an account? Sign in.", AutoSize = true, Margin = new Padding(0, 20, 0, 0) };
+            var loginLink = new LinkLabel { Text = "Already have an account? Sign in.", AutoSize = true, Margin = new Padding(0, 20, 0, 0), Font = UIStyle.Caption };
             loginLink.LinkClicked += (s, e) => AppRuntime.Navigation.NavigateTo<LoginView>();
             step1Layout.Controls.Add(loginLink);
 
@@ -86,28 +86,28 @@ namespace RealView.Views
             _step2Panel = new Panel { Dock = DockStyle.Fill, Visible = false };
             var step2Layout = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false };
 
-            var title2 = new Label { Text = "Personal Info", Font = new Font("Segoe UI", 18, FontStyle.Bold), AutoSize = true, Margin = new Padding(0, 0, 0, 20) };
+            var title2 = new Label { Text = "Personal Info", Font = UIStyle.SubHeader, AutoSize = true, Margin = new Padding(0, 0, 0, 20) };
             
-            var lblGender = new Label { Text = "Gender", AutoSize = true, Margin = new Padding(0, 10, 0, 5) };
-            _genderCb = new ComboBox { Width = 420, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 11) };
+            var lblGender = new Label { Text = "Gender", AutoSize = true, Margin = new Padding(0, 10, 0, 5), Font = UIStyle.CaptionBold };
+            _genderCb = new ComboBox { Width = 420, DropDownStyle = ComboBoxStyle.DropDownList, Font = UIStyle.Body };
             _genderCb.Items.AddRange(new object[] { Gender.Male, Gender.Female, Gender.NonBinary, Gender.PreferNotToSay });
             _genderCb.SelectedIndex = 0;
 
-            var lblHeight = new Label { Text = "Height (cm)", AutoSize = true, Margin = new Padding(0, 15, 0, 5) };
-            _heightNum = new NumericUpDown { Width = 420, Maximum = 300, Value = 170, Font = new Font("Segoe UI", 11), DecimalPlaces = 1 };
+            var lblHeight = new Label { Text = "Height (cm)", AutoSize = true, Margin = new Padding(0, 15, 0, 5), Font = UIStyle.CaptionBold };
+            _heightNum = new NumericUpDown { Width = 420, Maximum = 300, Value = 170, Font = UIStyle.Body, DecimalPlaces = 1 };
 
-            var lblWeight = new Label { Text = "Weight (kg)", AutoSize = true, Margin = new Padding(0, 15, 0, 5) };
-            _weightNum = new NumericUpDown { Width = 420, Maximum = 999, Value = 70, Font = new Font("Segoe UI", 11), DecimalPlaces = 1 };
+            var lblWeight = new Label { Text = "Weight (kg)", AutoSize = true, Margin = new Padding(0, 15, 0, 5), Font = UIStyle.CaptionBold };
+            _weightNum = new NumericUpDown { Width = 420, Maximum = 999, Value = 70, Font = UIStyle.Body, DecimalPlaces = 1 };
 
             _finishBtn = new Button
             {
                 Text = "FINISH",
                 Size = new Size(420, 50),
                 Margin = new Padding(0, 30, 0, 0),
-                BackColor = Color.FromArgb(40, 167, 69),
-                ForeColor = Color.White,
+                BackColor = UIStyle.Success,
+                ForeColor = UIStyle.TextOnPrimary,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 11, FontStyle.Bold)
+                Font = UIStyle.BodySemibold
             };
             _finishBtn.FlatAppearance.BorderSize = 0;
             _finishBtn.Click += FinishBtn_Click;
@@ -129,14 +129,14 @@ namespace RealView.Views
             this.Controls.Add(_card);
 
             _card.Paint += (s, e) => {
-                ControlPaint.DrawBorder(e.Graphics, _card.ClientRectangle, Color.LightGray, ButtonBorderStyle.Solid);
+                ControlPaint.DrawBorder(e.Graphics, _card.ClientRectangle, UIStyle.Border, ButtonBorderStyle.Solid);
             };
         }
 
         private TextBox CreateField(string labelText, FlowLayoutPanel container, bool isPassword = false)
         {
-            var lbl = new Label { Text = labelText, AutoSize = true, Margin = new Padding(0, 10, 0, 5) };
-            var txt = new TextBox { Width = 420, Font = new Font("Segoe UI", 11), PasswordChar = isPassword ? '*' : '\0' };
+            var lbl = new Label { Text = labelText, AutoSize = true, Margin = new Padding(0, 10, 0, 5), Font = UIStyle.CaptionBold };
+            var txt = new TextBox { Width = 420, Font = UIStyle.Body, PasswordChar = isPassword ? '*' : '\0' };
             container.Controls.Add(lbl);
             container.Controls.Add(txt);
             return txt;

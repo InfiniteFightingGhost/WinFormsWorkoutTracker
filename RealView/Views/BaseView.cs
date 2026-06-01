@@ -28,7 +28,7 @@ namespace RealView.Views
                 path.AddArc(rect.X, rect.Bottom - r * 2, r * 2, r * 2, 90, 90);
                 path.CloseFigure();
 
-                using (SolidBrush brush = new SolidBrush(UIStyle.Card))
+                using (SolidBrush brush = new SolidBrush(UIStyle.Surface))
                 {
                     g.FillPath(brush, path);
                 }

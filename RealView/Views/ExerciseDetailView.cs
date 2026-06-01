@@ -5,6 +5,13 @@ using Data.Entities;
 using Data.DTOs;
 using System.Collections.Generic;
 using System.Linq;
+using LiveChartsCore;
+using LiveChartsCore.Kernel;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.WinForms;
+using LiveChartsCore.SkiaSharpView.Painting;
+using SkiaSharp;
+using LiveChartsCore.SkiaSharpView.Painting.Effects;
 
 namespace RealView.Views
 {
@@ -12,13 +19,9 @@ namespace RealView.Views
     {
         private Exercise _exercise;
         private FlowLayoutPanel _mainLayout;
-        private Panel _chartPanel;
+        private CartesianChart _chart;
         private List<ExerciseProgressDTO> _progressData = new List<ExerciseProgressDTO>();
         private bool _showWeight = true; // Toggle between Weight and Volume
-        
-        private int _hoverIndex = -1;
-        private int _selectedIndex = -1;
-        private List<PointF> _currentPoints = new List<PointF>();
         
         private FlowLayoutPanel _selectionContainer;
         private Label _valueLabel;
@@ -37,13 +40,13 @@ namespace RealView.Views
             {
                 var data = await AppRuntime.WorkoutSet.GetExerciseProgressAsync(user.Id, _exercise.Id);
                 _progressData = data.ToList();
-                _chartPanel.Invalidate(); // Redraw chart
+                UpdateChart();
             }
         }
 
         private void InitializeComponent()
         {
-            this.BackColor = Color.FromArgb(245, 247, 251);
+            this.BackColor = UIStyle.Background;
 
             _mainLayout = new FlowLayoutPanel
             {
@@ -59,7 +62,7 @@ namespace RealView.Views
                 Text = "← BACK",
                 Size = new Size(100, 35),
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                Font = UIStyle.CaptionBold,
                 Margin = new Padding(0, 0, 0, 20),
                 Cursor = Cursors.Hand
             };
@@ -74,7 +77,7 @@ namespace RealView.Views
             var title = new Label
             {
                 Text = _exercise.Name,
-                Font = new Font("Segoe UI", 28, FontStyle.Bold),
+                Font = UIStyle.Header,
                 AutoSize = true,
                 Margin = new Padding(0, 0, 0, 10)
             };
@@ -82,8 +85,8 @@ namespace RealView.Views
             var muscleGroup = new Label
             {
                 Text = $"Target: {_exercise.MainMuscleGroup?.Name ?? "Unknown"}",
-                Font = new Font("Segoe UI", 14, FontStyle.Italic),
-                ForeColor = Color.DimGray,
+                Font = new Font(UIStyle.Body.FontFamily, 14, FontStyle.Italic),
+                ForeColor = UIStyle.TextSecondary,
                 AutoSize = true,
                 Margin = new Padding(0, 0, 0, 30)
             };
@@ -99,9 +102,9 @@ namespace RealView.Views
 
             _valueLabel = new Label
             {
-                Text = "Select a point ",
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                ForeColor = Color.Gray,
+                Text = "Hover over chart ",
+                Font = UIStyle.BodySemibold,
+                ForeColor = UIStyle.TextSecondary,
                 AutoSize = true,
                 Margin = new Padding(0)
             };
@@ -109,8 +112,8 @@ namespace RealView.Views
             _dateLabel = new Label
             {
                 Text = "to see details",
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                ForeColor = Color.FromArgb(0, 120, 215),
+                Font = UIStyle.BodySemibold,
+                ForeColor = UIStyle.Primary,
                 AutoSize = true,
                 Margin = new Padding(5, 0, 0, 0)
             };
@@ -119,7 +122,7 @@ namespace RealView.Views
             _selectionContainer.Controls.Add(_dateLabel);
 
             // PROGRESS SECTION
-            var progressHeader = new Label { Text = "Progress History", Font = new Font("Segoe UI", 16, FontStyle.Bold), AutoSize = true, Margin = new Padding(0, 0, 0, 15) };
+            var progressHeader = new Label { Text = "Progress History", Font = UIStyle.SubHeader, AutoSize = true, Margin = new Padding(0, 0, 0, 15) };
             
             var togglePanel = new FlowLayoutPanel { AutoSize = true, FlowDirection = FlowDirection.LeftToRight, Margin = new Padding(0, 0, 0, 10) };
             
@@ -128,52 +131,57 @@ namespace RealView.Views
 
             weightToggle.Click += (s, e) => { 
                 _showWeight = true; 
-                ResetSelection();
-                weightToggle.BackColor = Color.FromArgb(0, 120, 215); 
-                weightToggle.ForeColor = Color.White; 
-                volumeToggle.BackColor = Color.White; 
-                volumeToggle.ForeColor = Color.Black; 
-                _chartPanel.Invalidate(); 
+                weightToggle.BackColor = UIStyle.Primary; 
+                weightToggle.ForeColor = UIStyle.TextOnPrimary; 
+                volumeToggle.BackColor = UIStyle.Surface; 
+                volumeToggle.ForeColor = UIStyle.TextPrimary; 
+                UpdateChart(); 
             };
             volumeToggle.Click += (s, e) => { 
                 _showWeight = false; 
-                ResetSelection();
-                volumeToggle.BackColor = Color.FromArgb(0, 120, 215); 
-                volumeToggle.ForeColor = Color.White; 
-                weightToggle.BackColor = Color.White; 
-                weightToggle.ForeColor = Color.Black; 
-                _chartPanel.Invalidate(); 
+                volumeToggle.BackColor = UIStyle.Primary; 
+                volumeToggle.ForeColor = UIStyle.TextOnPrimary; 
+                weightToggle.BackColor = UIStyle.Surface; 
+                weightToggle.ForeColor = UIStyle.TextPrimary; 
+                UpdateChart(); 
             };
 
             togglePanel.Controls.Add(weightToggle);
             togglePanel.Controls.Add(volumeToggle);
 
-            _chartPanel = new Panel
+            var chartContainer = new Panel
             {
                 Size = new Size(800, 350),
-                BackColor = Color.White,
+                BackColor = UIStyle.Surface,
                 Margin = new Padding(0, 0, 0, 40)
             };
-            _chartPanel.Paint += ChartPanel_Paint;
-            _chartPanel.MouseMove += ChartPanel_MouseMove;
-            _chartPanel.MouseClick += ChartPanel_MouseClick;
-            _chartPanel.MouseLeave += (s, e) => { _hoverIndex = -1; _chartPanel.Invalidate(); };
+            chartContainer.Paint += (s, e) => DrawCard(e.Graphics, chartContainer.ClientRectangle);
 
-            var descTitle = new Label { Text = "Description", Font = new Font("Segoe UI", 12, FontStyle.Bold), AutoSize = true, Margin = new Padding(0, 0, 0, 5) };
+            _chart = new CartesianChart
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(20),
+                AnimationsSpeed = TimeSpan.FromMilliseconds(500),
+                EasingFunction = LiveChartsCore.EasingFunctions.Lineal
+            };
+            _chart.DataPointerDown += Chart_DataPointerDown;
+            chartContainer.Controls.Add(_chart);
+
+            var descTitle = new Label { Text = "Description", Font = UIStyle.BodySemibold, AutoSize = true, Margin = new Padding(0, 0, 0, 5) };
             var desc = new Label
             {
                 Text = string.IsNullOrEmpty(_exercise.Description) ? "No description provided." : _exercise.Description,
-                Font = new Font("Segoe UI", 11),
+                Font = UIStyle.Body,
                 Width = 800,
                 AutoSize = true,
                 Margin = new Padding(0, 0, 0, 30)
             };
 
-            var instTitle = new Label { Text = "Instructions", Font = new Font("Segoe UI", 12, FontStyle.Bold), AutoSize = true, Margin = new Padding(0, 0, 0, 5) };
+            var instTitle = new Label { Text = "Instructions", Font = UIStyle.BodySemibold, AutoSize = true, Margin = new Padding(0, 0, 0, 5) };
             var inst = new Label
             {
                 Text = string.IsNullOrEmpty(_exercise.Instructions) ? "No instructions provided." : _exercise.Instructions,
-                Font = new Font("Segoe UI", 11),
+                Font = UIStyle.Body,
                 Width = 800,
                 AutoSize = true,
                 Margin = new Padding(0, 0, 0, 30)
@@ -185,20 +193,13 @@ namespace RealView.Views
             _mainLayout.Controls.Add(progressHeader);
             _mainLayout.Controls.Add(_selectionContainer);
             _mainLayout.Controls.Add(togglePanel);
-            _mainLayout.Controls.Add(_chartPanel);
+            _mainLayout.Controls.Add(chartContainer);
             _mainLayout.Controls.Add(descTitle);
             _mainLayout.Controls.Add(desc);
             _mainLayout.Controls.Add(instTitle);
             _mainLayout.Controls.Add(inst);
 
             this.Controls.Add(_mainLayout);
-        }
-
-        private void ResetSelection()
-        {
-            _selectedIndex = -1;
-            _valueLabel.Text = "Select a point ";
-            _dateLabel.Text = "to see details";
         }
 
         private Button CreateToggleButton(string text, bool isActive)
@@ -208,160 +209,120 @@ namespace RealView.Views
                 Text = text,
                 Size = new Size(100, 35),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = isActive ? Color.FromArgb(0, 120, 215) : Color.White,
-                ForeColor = isActive ? Color.White : Color.Black,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                BackColor = isActive ? UIStyle.Primary : UIStyle.Surface,
+                ForeColor = isActive ? UIStyle.TextOnPrimary : UIStyle.TextPrimary,
+                Font = UIStyle.CaptionBold,
                 Cursor = Cursors.Hand
             };
         }
 
-        private void ChartPanel_MouseMove(object? sender, MouseEventArgs e)
+        private async void Chart_DataPointerDown(object chart, IEnumerable<dynamic> points)
         {
-            int oldHover = _hoverIndex;
-            _hoverIndex = -1;
+            var point = points.FirstOrDefault();
+            if (point == null) return;
+
+            // Get the index from the point. LiveCharts2 points have an Index property.
+            int index = (int)point.Index;
             
-            for (int i = 0; i < _currentPoints.Count; i++)
+            // We need to be careful with the index if we have multiple series.
+            // But here the points are from the merged progress data anyway.
+            
+            if (index >= 0 && index < _progressData.Count)
             {
-                var p = _currentPoints[i];
-                if (Math.Abs(p.X - e.X) < 10 && Math.Abs(p.Y - e.Y) < 10)
+                var data = _progressData[index];
+                if (data.WorkoutSessionId > 0 && !data.IsPotential)
                 {
-                    _hoverIndex = i;
-                    break;
-                }
-            }
-
-            if (oldHover != _hoverIndex)
-            {
-                _chartPanel.Invalidate();
-            }
-        }
-
-        private void ChartPanel_MouseClick(object? sender, MouseEventArgs e)
-        {
-            for (int i = 0; i < _currentPoints.Count; i++)
-            {
-                var p = _currentPoints[i];
-                if (Math.Abs(p.X - e.X) < 15 && Math.Abs(p.Y - e.Y) < 15)
-                {
-                    _selectedIndex = i;
-                    var data = _progressData[i];
-                    var val = _showWeight ? data.MaxWeight : data.MaxVolume;
-                    var unit = "kg";
-                    
-                    _valueLabel.Text = $"{val:0.##} {unit}";
-                    _dateLabel.Text = $"on {data.Date:MMM dd, yyyy}";
-                    
-                    _chartPanel.Invalidate();
-                    return;
-                }
-            }
-        }
-
-        private void ChartPanel_Paint(object? sender, PaintEventArgs e)
-        {
-            var g = e.Graphics;
-            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-
-            var rect = _chartPanel.ClientRectangle;
-            rect.X += 60; rect.Y += 20; rect.Width -= 80; rect.Height -= 70;
-
-            // Draw border/background
-            ControlPaint.DrawBorder(g, _chartPanel.ClientRectangle, Color.LightGray, ButtonBorderStyle.Solid);
-
-            if (_progressData.Count < 2)
-            {
-                var msg = _progressData.Count == 0 ? "No data available." : "Need more data for chart.";
-                g.DrawString(msg, new Font("Segoe UI", 12), Brushes.Gray, new PointF(rect.Left + 20, rect.Top + 20));
-                return;
-            }
-
-            // Calculate scales
-            var maxVal = _showWeight ? _progressData.Max(p => p.MaxWeight) : _progressData.Max(p => p.MaxVolume);
-            if (maxVal == 0) maxVal = 1;
-
-            _currentPoints.Clear();
-            float stepX = rect.Width / (float)(_progressData.Count - 1);
-
-            for (int i = 0; i < _progressData.Count; i++)
-            {
-                var val = _showWeight ? _progressData[i].MaxWeight : _progressData[i].MaxVolume;
-                float x = rect.Left + (i * stepX);
-                float y = rect.Bottom - ((float)val / (float)maxVal * rect.Height);
-                _currentPoints.Add(new PointF(x, y));
-            }
-
-            // Draw Grid Lines (Y-Axis)
-            using (var gridPen = new Pen(Color.FromArgb(240, 240, 240), 1))
-            {
-                for (int i = 0; i <= 4; i++)
-                {
-                    float y = rect.Bottom - (rect.Height * i / 4f);
-                    g.DrawLine(gridPen, rect.Left, y, rect.Right, y);
-                    
-                    var labelVal = maxVal * i / 4;
-                    g.DrawString($"{labelVal:0.#}", new Font("Segoe UI", 8), Brushes.Gray, new PointF(rect.Left - 50, y - 7));
-                }
-            }
-
-            // Draw line segments
-            for (int i = 0; i < _currentPoints.Count - 1; i++)
-            {
-                bool isPotential = _progressData[i + 1].IsPotential;
-                using (var pen = new Pen(Color.FromArgb(0, 120, 215), 3))
-                {
-                    if (isPotential)
+                    var session = await AppRuntime.WorkoutSession.GetByIdAsync(data.WorkoutSessionId);
+                    if (session != null)
                     {
-                        pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+                        AppRuntime.Navigation.NavigateTo<WorkoutDetailView>(session);
                     }
-                    g.DrawLine(pen, _currentPoints[i], _currentPoints[i+1]);
                 }
             }
+        }
 
-            // Draw dots and labels
-            for (int i = 0; i < _currentPoints.Count; i++)
+        private void UpdateChart()
+        {
+            if (_progressData.Count == 0) return;
+
+            var actualData = _progressData.Where(p => !p.IsPotential).ToList();
+            var potentialData = _progressData.Where(p => p.IsPotential).ToList();
+
+            var primaryColor = new SKColor(UIStyle.Primary.R, UIStyle.Primary.G, UIStyle.Primary.B);
+            var secondaryColor = new SKColor(UIStyle.TextSecondary.R, UIStyle.TextSecondary.G, UIStyle.TextSecondary.B);
+            
+            var linePaint = new SolidColorPaint(primaryColor, 3);
+            var dashedPaint = new SolidColorPaint(primaryColor, 2)
             {
-                var p = _currentPoints[i];
-                bool isSelected = (i == _selectedIndex);
-                bool isHovered = (i == _hoverIndex);
-                bool isPotential = _progressData[i].IsPotential;
+                PathEffect = new DashEffect(new float[] { 10, 5 })
+            };
 
-                if (isSelected)
-                {
-                    g.FillEllipse(Brushes.DodgerBlue, p.X - 6, p.Y - 6, 12, 12);
-                }
-                
-                g.FillEllipse(Brushes.White, p.X - 4, p.Y - 4, 8, 8);
-                
-                using (var circlePen = new Pen(isSelected ? Color.DarkBlue : Color.DodgerBlue, 2))
-                {
-                    if (isPotential) circlePen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
-                    g.DrawEllipse(circlePen, p.X - 4, p.Y - 4, 8, 8);
-                }
+            var seriesList = new List<ISeries>();
 
-                // Draw Date Labels (X-Axis)
-                if (i % Math.Max(1, _progressData.Count / 5) == 0 || i == _progressData.Count - 1)
+            if (actualData.Count > 0)
+            {
+                var actualValues = actualData.Select((p, i) => new LiveChartsCore.Defaults.ObservablePoint(i, (double)(_showWeight ? p.MaxWeight : p.MaxVolume))).ToArray();
+                seriesList.Add(new LineSeries<LiveChartsCore.Defaults.ObservablePoint>
                 {
-                    var dateStr = isPotential ? "Potential" : _progressData[i].Date.ToString("MM/dd");
-                    g.DrawString(dateStr, new Font("Segoe UI", 8), Brushes.Gray, new PointF(p.X - 15, rect.Bottom + 10));
-                }
-
-                if (isHovered)
-                {
-                    var val = _showWeight ? _progressData[i].MaxWeight : _progressData[i].MaxVolume;
-                    var hoverText = $"{(isPotential ? "[Pot.] " : "")}{val:0.##}";
-                    var textSize = g.MeasureString(hoverText, new Font("Segoe UI", 9, FontStyle.Bold));
-                    g.FillRectangle(Brushes.Black, p.X + 10, p.Y - 20, textSize.Width + 4, textSize.Height + 2);
-                    g.DrawString(hoverText, new Font("Segoe UI", 9, FontStyle.Bold), Brushes.White, p.X + 12, p.Y - 18);
-                }
+                    Values = actualValues,
+                    Fill = null,
+                    GeometrySize = 10,
+                    Stroke = linePaint,
+                    GeometryStroke = linePaint,
+                    GeometryFill = new SolidColorPaint(SKColors.White),
+                    Name = _showWeight ? "Actual Weight" : "Actual Volume"
+                });
             }
 
-            // Y-Axis Label (Vertical)
-            var yLabel = _showWeight ? "Weight (kg)" : "Volume (kg*reps)";
-            var state = g.Save();
-            g.TranslateTransform(20, rect.Top + rect.Height / 2);
-            g.RotateTransform(-90);
-            g.DrawString(yLabel, new Font("Segoe UI", 10, FontStyle.Bold), Brushes.DimGray, new PointF(-g.MeasureString(yLabel, new Font("Segoe UI", 10)).Width / 2, 0));
-            g.Restore(state);
+            if (potentialData.Count > 0)
+            {
+                // To connect the potential line, include the last actual point if it exists
+                var potentialPoints = new List<LiveChartsCore.Defaults.ObservablePoint>();
+                int startIndex = actualData.Count > 0 ? actualData.Count - 1 : 0;
+                
+                if (actualData.Count > 0)
+                {
+                    var lastActual = actualData.Last();
+                    potentialPoints.Add(new LiveChartsCore.Defaults.ObservablePoint(startIndex, (double)(_showWeight ? lastActual.MaxWeight : lastActual.MaxVolume)));
+                }
+
+                for (int i = 0; i < potentialData.Count; i++)
+                {
+                    var p = potentialData[i];
+                    potentialPoints.Add(new LiveChartsCore.Defaults.ObservablePoint(startIndex + i + (actualData.Count > 0 ? 1 : 0), (double)(_showWeight ? p.MaxWeight : p.MaxVolume)));
+                }
+
+                seriesList.Add(new LineSeries<LiveChartsCore.Defaults.ObservablePoint>
+                {
+                    Values = potentialPoints,
+                    Fill = null,
+                    GeometrySize = 10,
+                    Stroke = dashedPaint,
+                    GeometryStroke = dashedPaint,
+                    GeometryFill = new SolidColorPaint(SKColors.White),
+                    Name = _showWeight ? "Potential Weight" : "Potential Volume"
+                });
+            }
+
+            _chart.Series = seriesList;
+
+            _chart.XAxes = new Axis[]
+            {
+                new Axis
+                {
+                    Labels = _progressData.Select(p => p.Date.ToString("MM/dd")).ToArray(),
+                    LabelsPaint = new SolidColorPaint(secondaryColor)
+                }
+            };
+
+            _chart.YAxes = new Axis[]
+            {
+                new Axis
+                {
+                    LabelsPaint = new SolidColorPaint(secondaryColor),
+                    Labeler = v => $"{v:0.##} kg"
+                }
+            };
         }
     }
 }

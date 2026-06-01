@@ -22,13 +22,13 @@ namespace RealView.Controls
         private void InitializeComponent()
         {
             this.Size = new Size(300, 150);
-            this.BackColor = Color.FromArgb(32, 33, 36);
+            this.BackColor = UIStyle.Sidebar;
             
             _timerLabel = new Label
             {
                 Text = "00:00",
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                ForeColor = UIStyle.TextOnSidebar,
+                Font = UIStyle.Header,
                 Size = new Size(300, 60),
                 TextAlign = ContentAlignment.MiddleCenter,
                 Location = new Point(0, 10)
@@ -40,11 +40,11 @@ namespace RealView.Controls
                 Size = new Size(100, 40),
                 Location = new Point(40, 80),
                 FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = UIStyle.TextOnSidebar,
+                Font = UIStyle.CaptionBold,
                 Cursor = Cursors.Hand
             };
-            _skipBtn.FlatAppearance.BorderColor = Color.Gray;
+            _skipBtn.FlatAppearance.BorderColor = UIStyle.Border;
             _skipBtn.Click += (s, e) => Stop();
 
             _plus30Btn = new Button
@@ -53,11 +53,11 @@ namespace RealView.Controls
                 Size = new Size(100, 40),
                 Location = new Point(160, 80),
                 FlatStyle = FlatStyle.Flat,
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = UIStyle.TextOnSidebar,
+                Font = UIStyle.CaptionBold,
                 Cursor = Cursors.Hand
             };
-            _plus30Btn.FlatAppearance.BorderColor = Color.Gray;
+            _plus30Btn.FlatAppearance.BorderColor = UIStyle.Border;
             _plus30Btn.Click += (s, e) => { _secondsRemaining += 30; UpdateDisplay(); };
 
             this.Controls.Add(_timerLabel);

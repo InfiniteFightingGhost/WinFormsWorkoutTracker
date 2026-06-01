@@ -26,7 +26,7 @@ namespace RealView.Controls
             this.Size = new Size(400, 600);
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.StartPosition = FormStartPosition.CenterParent;
-            this.BackColor = Color.White;
+            this.BackColor = UIStyle.Surface;
 
             var mainLayout = new TableLayoutPanel
             {
@@ -45,14 +45,14 @@ namespace RealView.Controls
                 Dock = DockStyle.Fill,
                 DisplayMember = "Name",
                 DropDownStyle = ComboBoxStyle.DropDownList,
-                Font = new Font("Segoe UI", 10)
+                Font = UIStyle.Body
             };
             _muscleGroupFilter.SelectedIndexChanged += async (s, e) => await LoadExercises();
 
             _searchBox = new TextBox
             {
                 Dock = DockStyle.Fill,
-                Font = new Font("Segoe UI", 10),
+                Font = UIStyle.Body,
                 PlaceholderText = "Search exercises..."
             };
             _searchBox.TextChanged += async (s, e) => await LoadExercises();
@@ -61,7 +61,7 @@ namespace RealView.Controls
             {
                 Dock = DockStyle.Fill,
                 DisplayMember = "Name",
-                Font = new Font("Segoe UI", 11),
+                Font = UIStyle.Body,
                 BorderStyle = BorderStyle.FixedSingle,
                 ItemHeight = 30
             };
@@ -70,10 +70,10 @@ namespace RealView.Controls
             {
                 Text = "SELECT EXERCISE",
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(0, 120, 215),
-                ForeColor = Color.White,
+                BackColor = UIStyle.Primary,
+                ForeColor = UIStyle.TextOnPrimary,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+                Font = UIStyle.BodySemibold
             };
             _selectButton.FlatAppearance.BorderSize = 0;
             _selectButton.Click += SelectButton_Click;

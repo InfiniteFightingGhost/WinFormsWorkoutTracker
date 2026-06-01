@@ -32,6 +32,7 @@ namespace WorkoutTracker.Service.Implementations
 
                     return new ExerciseProgressDTO
                     {
+                        WorkoutSessionId = s.Id,
                         Date = s.Start,
                         MaxWeight = workoutExercise.Sets.Max(set => set.Weight),
                         MaxVolume = workoutExercise.Sets.Max(set => set.Weight * set.Repetitions),
@@ -58,6 +59,7 @@ namespace WorkoutTracker.Service.Implementations
                     {
                         progress.Add(new ExerciseProgressDTO
                         {
+                            WorkoutSessionId = activeSession.Id,
                             Date = activeSession.Start,
                             MaxWeight = completedSets.Max(s => s.Weight),
                             MaxVolume = completedSets.Max(s => s.Weight * s.Repetitions),
@@ -76,6 +78,7 @@ namespace WorkoutTracker.Service.Implementations
                         {
                             progress.Add(new ExerciseProgressDTO
                             {
+                                WorkoutSessionId = activeSession.Id,
                                 Date = DateTime.Now,
                                 MaxWeight = potWeight,
                                 MaxVolume = potVolume,
@@ -89,7 +92,7 @@ namespace WorkoutTracker.Service.Implementations
             return progress;
         }
 
-        public async Task<IEnumerable<dynamic>> GetUserPRsAsync(int userId)
+        public async Task<IEnumerable<UserPRDTO>> GetUserPRsAsync(int userId)
         {
             var sessions = await _context.WorkoutSessions
                 .Where(s => s.UserId == userId && s.Status == WorkoutStatus.Finished)
@@ -101,20 +104,25 @@ namespace WorkoutTracker.Service.Implementations
 
             var prs = sessions.SelectMany(s => s.Exercises)
                 .GroupBy(e => e.ExerciseId)
-                .Select(g => new {
-                    ExerciseName = g.First().Exercise.Name,
-                    MaxWeight = g.SelectMany(we => we.Sets).Any() ? g.SelectMany(we => we.Sets).Max(set => set.Weight) : 0,
-                    Date = g.OrderByDescending(we => we.Sets.Any() ? we.Sets.Max(s => s.Weight) : 0).First().WorkoutSession.Start
+                .Select(g => {
+                    var topSession = g.OrderByDescending(we => we.Sets.Any() ? we.Sets.Max(s => s.Weight) : 0).First();
+                    return new UserPRDTO {
+                        ExerciseId = g.Key,
+                        WorkoutSessionId = topSession.WorkoutId,
+                        ExerciseName = topSession.Exercise.Name,
+                        MaxWeight = g.SelectMany(we => we.Sets).Any() ? g.SelectMany(we => we.Sets).Max(set => set.Weight) : 0,
+                        Date = topSession.WorkoutSession.Start
+                    };
                 })
                 .Where(p => p.MaxWeight > 0)
                 .OrderByDescending(p => p.MaxWeight)
                 .Take(5)
-                .ToList<dynamic>();
+                .ToList();
 
             return prs;
         }
 
-        public async Task<IEnumerable<dynamic>> GetMuscleVolumeAsync(int userId)
+        public async Task<IEnumerable<MuscleVolumeDTO>> GetMuscleVolumeAsync(int userId)
         {
             var sessions = await _context.WorkoutSessions
                 .Where(s => s.UserId == userId && s.Status == WorkoutStatus.Finished)
@@ -127,13 +135,13 @@ namespace WorkoutTracker.Service.Implementations
 
             var volume = sessions.SelectMany(s => s.Exercises)
                 .GroupBy(e => e.Exercise?.MainMuscleGroup?.Name ?? "Unknown")
-                .Select(g => new {
+                .Select(g => new MuscleVolumeDTO {
                     MuscleGroup = g.Key,
                     SetCount = g.SelectMany(we => we.Sets).Count(),
                     TotalVolume = g.SelectMany(we => we.Sets).Sum(set => set.Weight * set.Repetitions)
                 })
                 .OrderByDescending(v => v.TotalVolume)
-                .ToList<dynamic>();
+                .ToList();
 
             return volume;
         }

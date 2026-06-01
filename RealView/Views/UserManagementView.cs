@@ -17,7 +17,7 @@ namespace RealView.Views
 
         private void InitializeComponent()
         {
-            _grid = new DataGridView { Dock = DockStyle.Fill, BackgroundColor = Color.White, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, SelectionMode = DataGridViewSelectionMode.FullRowSelect, AllowUserToAddRows = false, ReadOnly = true };
+            _grid = new DataGridView { Dock = DockStyle.Fill, BackgroundColor = UIStyle.Surface, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, SelectionMode = DataGridViewSelectionMode.FullRowSelect, AllowUserToAddRows = false, ReadOnly = true };
             
             var btnPanel = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 40 };
             var delBtn = new Button { Text = "Delete User", Width = 120 };

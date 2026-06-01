@@ -14,6 +14,8 @@ namespace RealView.Services
         private System.Windows.Forms.Timer? _transitionTimer;
         private double _opacity = 0;
 
+        public event EventHandler<UserControl>? Navigated;
+
         public NavigationService(Panel container)
         {
             _container = container;
@@ -47,7 +49,7 @@ namespace RealView.Services
 
         private void PerformNavigation(UserControl view)
         {
-            if (_currentView == view) return;
+            if (_currentView == view && view.Visible) return;
 
             _transitionTimer?.Stop();
             
@@ -65,6 +67,8 @@ namespace RealView.Services
                 baseView.OnNavigatedTo();
             }
 
+            Navigated?.Invoke(this, view);
+
             // Start fade in animation
             view.Visible = true;
             _transitionTimer = new System.Windows.Forms.Timer { Interval = 10 };
@@ -76,13 +80,34 @@ namespace RealView.Services
                     _opacity = 1;
                     _transitionTimer.Stop();
                 }
-                // WinForms UserControls don't support Opacity, 
-                // but we can force a repaint or use this for more complex transitions later.
-                // For now, this serves as a hook for the layout to settle.
             };
             _transitionTimer.Start();
         }
         
+        public void RefreshCurrentView()
+        {
+            if (_currentView == null) return;
+
+            var viewType = _currentView.GetType();
+            
+            // Clear cache so it gets recreated with new theme colors
+            _viewCache.Clear();
+
+            // Re-instantiate based on type
+            // Note: This only works for views with parameterless constructors.
+            // For views with parameters, they are usually one-off navigations anyway.
+            try
+            {
+                var newView = (UserControl)Activator.CreateInstance(viewType)!;
+                PerformNavigation(newView);
+            }
+            catch
+            {
+                // If it fails (e.g. requires params), just re-navigate to Dashboard as fallback
+                NavigateTo<DashboardView>();
+            }
+        }
+
         public void ClearCache()
         {
             _viewCache.Clear();

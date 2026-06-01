@@ -30,7 +30,7 @@ namespace RealView.Views
             var title = new Label
             {
                 Text = "Admin Control Panel",
-                Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                Font = UIStyle.Header,
                 AutoSize = true,
                 Margin = new Padding(0, 0, 0, 40)
             };
@@ -45,7 +45,7 @@ namespace RealView.Views
             var spacer = new Panel { Size = new Size(400, 40) };
             _mainLayout.Controls.Add(spacer);
 
-            AddNavButton("IMPORT DATA (JSON)", async () => await ImportDataAsync(), Color.FromArgb(40, 167, 69));
+            AddNavButton("IMPORT DATA (JSON)", async () => await ImportDataAsync(), UIStyle.Success);
 
             this.Controls.Add(_mainLayout);
         }
@@ -56,10 +56,10 @@ namespace RealView.Views
             {
                 Text = text,
                 Size = new Size(400, 60),
-                BackColor = backColor ?? Color.FromArgb(60, 64, 67),
-                ForeColor = Color.White,
+                BackColor = backColor ?? UIStyle.SidebarHover,
+                ForeColor = UIStyle.TextOnSidebar,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Font = UIStyle.SubHeader,
                 Margin = new Padding(0, 0, 0, 20),
                 Cursor = Cursors.Hand
             };

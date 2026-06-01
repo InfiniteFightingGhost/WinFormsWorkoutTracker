@@ -27,8 +27,8 @@ namespace RealView.Views
 
             _card = new Panel
             {
-                Size = new Size(500, 650),
-                BackColor = Color.White,
+                Size = new Size(500, 700),
+                BackColor = UIStyle.Surface,
                 Padding = new Padding(30)
             };
 
@@ -40,7 +40,8 @@ namespace RealView.Views
             {
                 Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.TopDown,
-                WrapContents = false
+                WrapContents = false,
+                AutoScroll = true
             };
 
             var titleLbl = new Label { Text = "Finish Workout", Font = UIStyle.Header, AutoSize = true, Margin = new Padding(0, 0, 0, 20) };
@@ -52,9 +53,9 @@ namespace RealView.Views
             _notesTxt = new TextBox { Width = 440, Height = 100, Multiline = true, Font = UIStyle.Body, Text = _session.Notes };
 
             var photoLbl = new Label { Text = "ATTACH PHOTO", Font = UIStyle.CaptionBold, ForeColor = UIStyle.TextSecondary, Margin = new Padding(0, 20, 0, 5) };
-            _photoPreview = new PictureBox { Size = new Size(150, 150), SizeMode = PictureBoxSizeMode.Zoom, BackColor = Color.FromArgb(245, 245, 245), BorderStyle = BorderStyle.FixedSingle };
+            _photoPreview = new PictureBox { Size = new Size(150, 150), SizeMode = PictureBoxSizeMode.Zoom, BackColor = UIStyle.SurfaceVariant, BorderStyle = BorderStyle.FixedSingle };
             
-            var addPhotoBtn = new ModernButton { Text = "📷 Add Photo", Size = new Size(150, 40), NormalColor = UIStyle.Primary, HoverColor = UIStyle.PrimaryHover, ForeColor = Color.White, BorderRadius = 8, Margin = new Padding(0, 10, 0, 0) };
+            var addPhotoBtn = new ModernButton { Text = "📷 Add Photo", Size = new Size(150, 40), NormalColor = UIStyle.Primary, HoverColor = UIStyle.PrimaryHover, ForeColor = UIStyle.TextOnPrimary, BorderRadius = 8, Margin = new Padding(0, 10, 0, 0) };
             addPhotoBtn.Click += AddPhotoBtn_Click;
 
             var finishBtn = new ModernButton { Text = "FINALIZE WORKOUT", Size = new Size(440, 50), Margin = new Padding(0, 40, 0, 0), BorderRadius = 10, NormalColor = UIStyle.Success };

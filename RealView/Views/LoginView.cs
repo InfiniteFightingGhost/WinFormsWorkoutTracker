@@ -19,12 +19,12 @@ namespace RealView.Views
 
         private void InitializeComponent()
         {
-            this.BackColor = Color.FromArgb(245, 247, 251);
+            this.BackColor = UIStyle.Background;
             
             _card = new Panel
             {
                 Size = new Size(400, 450),
-                BackColor = Color.White,
+                BackColor = UIStyle.Surface,
                 Padding = new Padding(30)
             };
             
@@ -36,17 +36,17 @@ namespace RealView.Views
             var title = new Label
             {
                 Text = "Login",
-                Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                Font = UIStyle.Header,
                 Dock = DockStyle.Top,
                 Height = 60,
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
-            var userLabel = new Label { Text = "Username", Dock = DockStyle.Top, Height = 30, Margin = new Padding(0, 20, 0, 0) };
-            _usernameTxt = new TextBox { Dock = DockStyle.Top, Font = new Font("Segoe UI", 12) };
+            var userLabel = new Label { Text = "Username", Dock = DockStyle.Top, Height = 30, Margin = new Padding(0, 20, 0, 0), Font = UIStyle.CaptionBold };
+            _usernameTxt = new TextBox { Dock = DockStyle.Top, Font = UIStyle.Body };
 
-            var passLabel = new Label { Text = "Password", Dock = DockStyle.Top, Height = 30, Margin = new Padding(0, 15, 0, 0) };
-            _passwordTxt = new TextBox { Dock = DockStyle.Top, Font = new Font("Segoe UI", 12), PasswordChar = '*' };
+            var passLabel = new Label { Text = "Password", Dock = DockStyle.Top, Height = 30, Margin = new Padding(0, 15, 0, 0), Font = UIStyle.CaptionBold };
+            _passwordTxt = new TextBox { Dock = DockStyle.Top, Font = UIStyle.Body, PasswordChar = '*' };
 
             var spacer = new Panel { Dock = DockStyle.Top, Height = 20 };
 
@@ -55,10 +55,10 @@ namespace RealView.Views
                 Text = "LOGIN",
                 Dock = DockStyle.Top,
                 Height = 50,
-                BackColor = Color.FromArgb(0, 120, 215),
-                ForeColor = Color.White,
+                BackColor = UIStyle.Primary,
+                ForeColor = UIStyle.TextOnPrimary,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 12, FontStyle.Bold)
+                Font = UIStyle.BodySemibold
             };
             _loginBtn.FlatAppearance.BorderSize = 0;
             _loginBtn.Click += LoginBtn_Click;
@@ -68,7 +68,8 @@ namespace RealView.Views
                 Text = "Don't have an account? Register",
                 Dock = DockStyle.Bottom,
                 Height = 30,
-                TextAlign = ContentAlignment.MiddleCenter
+                TextAlign = ContentAlignment.MiddleCenter,
+                Font = UIStyle.Caption
             };
             _registerLink.LinkClicked += (s, e) => AppRuntime.Navigation.NavigateTo<RegistrationView>();
 
@@ -84,7 +85,7 @@ namespace RealView.Views
             this.Controls.Add(_card);
             
             _card.Paint += (s, e) => {
-                ControlPaint.DrawBorder(e.Graphics, _card.ClientRectangle, Color.LightGray, ButtonBorderStyle.Solid);
+                ControlPaint.DrawBorder(e.Graphics, _card.ClientRectangle, UIStyle.Border, ButtonBorderStyle.Solid);
             };
         }
 

@@ -21,7 +21,7 @@ namespace RealView.Views
 
         private void InitializeComponent()
         {
-            this.BackColor = Color.FromArgb(245, 247, 251);
+            this.BackColor = UIStyle.Background;
 
             _mainLayout = new FlowLayoutPanel
             {
@@ -37,7 +37,7 @@ namespace RealView.Views
                 Text = "← BACK TO HISTORY",
                 Size = new Size(200, 35),
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                Font = UIStyle.CaptionBold,
                 Margin = new Padding(0, 0, 0, 20),
                 Cursor = Cursors.Hand
             };
@@ -47,7 +47,7 @@ namespace RealView.Views
             var title = new Label
             {
                 Text = $"Workout on {_session.Start:f}",
-                Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                Font = UIStyle.Header,
                 AutoSize = true,
                 Margin = new Padding(0, 0, 0, 10)
             };
@@ -66,8 +66,8 @@ namespace RealView.Views
             var infoLabel = new Label
             {
                 Text = $"Duration: {durationStr}",
-                Font = new Font("Segoe UI", 12),
-                ForeColor = Color.DimGray,
+                Font = UIStyle.SubHeader,
+                ForeColor = UIStyle.TextSecondary,
                 AutoSize = true,
                 Margin = new Padding(0, 0, 0, 30)
             };

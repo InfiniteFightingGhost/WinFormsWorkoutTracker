@@ -39,7 +39,8 @@ namespace RealView.Views
             _timerLabel = new Label
             {
                 Text = "00:00:00",
-                Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                Font = UIStyle.Header,
+                ForeColor = UIStyle.TextPrimary,
                 AutoSize = true,
                 Location = new Point(0, 0)
             };
@@ -48,13 +49,13 @@ namespace RealView.Views
             var reorderBtn = new Button
             {
                 Text = "REORDER",
-                BackColor = Color.FromArgb(0, 123, 255), // Blue Accent highlight,
+                BackColor = UIStyle.Info,
                 TextAlign = ContentAlignment.MiddleCenter,
-                ForeColor = Color.White,
+                ForeColor = UIStyle.TextOnPrimary,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Font = UIStyle.BodySemibold,
                 Size = new Size(150, 50),
-                Location = new Point(430, 0) // Fits well into the 800px header container
+                Location = new Point(430, 0)
             };
             reorderBtn.Click += ReorderBtn_Click;
 
@@ -62,10 +63,10 @@ namespace RealView.Views
             _finishBtn = new Button
             {
                 Text = "FINISH",
-                BackColor = Color.FromArgb(40, 167, 69),
-                ForeColor = Color.White,
+                BackColor = UIStyle.Success,
+                ForeColor = UIStyle.TextOnPrimary,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Font = UIStyle.BodySemibold,
                 Size = new Size(200, 50),
                 Location = new Point(600, 0)
             };
@@ -85,8 +86,9 @@ namespace RealView.Views
                 Text = "+ ADD EXERCISE",
                 Size = new Size(800, 50),
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                BackColor = Color.FromArgb(240, 240, 240),
+                Font = UIStyle.BodySemibold,
+                BackColor = UIStyle.SurfaceVariant,
+                ForeColor = UIStyle.TextPrimary,
                 Margin = new Padding(0, 20, 0, 40)
             };
             _addExerciseBtn.Click += AddExerciseBtn_Click;
@@ -100,12 +102,12 @@ namespace RealView.Views
                 Text = "DISCARD WORKOUT",
                 Size = new Size(800, 50),
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                ForeColor = Color.IndianRed,
-                BackColor = Color.FromArgb(255, 235, 235),
+                Font = UIStyle.BodySemibold,
+                ForeColor = UIStyle.Danger,
+                BackColor = UIStyle.Background, // Or a very light red if added to UIStyle
                 Margin = new Padding(0, 0, 0, 100)
             };
-            discardBtn.FlatAppearance.BorderColor = Color.IndianRed;
+            discardBtn.FlatAppearance.BorderColor = UIStyle.Danger;
             discardBtn.Click += async (s, e) => {
                 if (MessageBox.Show("Are you sure you want to discard this workout? This action cannot be undone.", "Discard", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                 {
@@ -122,7 +124,7 @@ namespace RealView.Views
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message);
+                        AppRuntime.Toasts.Show(ex.Message, Services.ToastType.Error);
                     }
                 }
             };
@@ -195,7 +197,12 @@ namespace RealView.Views
                         
                         // Sync with in-memory model to avoid duplicates on refresh
                         session.Exercises ??= new List<WorkoutExercise>();
-                        session.Exercises.Add(workoutEx);
+                        
+                        // Prevent duplication if the service/EF has already updated the tracked collection
+                        if (!session.Exercises.Any(ex => ex.ExerciseId == workoutEx.ExerciseId))
+                        {
+                            session.Exercises.Add(workoutEx);
+                        }
 
                         // Clear and reload to ensure order and state are consistent
                         LoadExercises();

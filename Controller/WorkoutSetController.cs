@@ -20,12 +20,12 @@ namespace Controller
             return await _workoutSetService.GetExerciseProgressAsync(userId, exerciseId);
         }
 
-        public async Task<IEnumerable<dynamic>> GetUserPRsAsync(int userId)
+        public async Task<IEnumerable<UserPRDTO>> GetUserPRsAsync(int userId)
         {
             return await _workoutSetService.GetUserPRsAsync(userId);
         }
 
-        public async Task<IEnumerable<dynamic>> GetMuscleVolumeAsync(int userId)
+        public async Task<IEnumerable<MuscleVolumeDTO>> GetMuscleVolumeAsync(int userId)
         {
             return await _workoutSetService.GetMuscleVolumeAsync(userId);
         }

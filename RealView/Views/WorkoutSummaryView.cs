@@ -29,12 +29,12 @@ namespace RealView.Views
 
         private void InitializeComponent()
         {
-            this.BackColor = Color.FromArgb(245, 247, 251);
+            this.BackColor = UIStyle.Background;
 
             // 1. Top Celebration Header
             var header = new Panel { Dock = DockStyle.Top, Height = 140, Padding = new Padding(40, 20, 40, 0) };
             var niceWorkLbl = new Label { Text = "Nice work!", Font = new Font("Segoe UI", 32, FontStyle.Bold), AutoSize = true, Location = new Point(40, 15) };
-            _subtitleLbl = new Label { Text = "Calculating...", Font = new Font("Segoe UI Semibold", 13), ForeColor = Color.FromArgb(140, 140, 140), AutoSize = true, Location = new Point(42, 75) };
+            _subtitleLbl = new Label { Text = "Calculating...", Font = new Font("Segoe UI Semibold", 13), ForeColor = UIStyle.TextSecondary, AutoSize = true, Location = new Point(42, 75) };
             
             var celebIcon = new Button
             {
@@ -43,7 +43,7 @@ namespace RealView.Views
                 Location = new Point(this.Width - 110, 25),
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 24),
-                BackColor = Color.FromArgb(255, 235, 245),
+                BackColor = UIStyle.Highlight,
                 Cursor = Cursors.Hand
             };
             celebIcon.FlatAppearance.BorderSize = 0;
@@ -66,8 +66,8 @@ namespace RealView.Views
             _carouselContainer.Controls.Add(_cardsPanel);
             this.Controls.Add(_carouselContainer);
 
-            var prevBtn = new Button { Text = "◀", Size = new Size(45, 45), Location = new Point(_carouselContainer.Left - 60, 415), FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = Color.Gray };
-            var nextBtn = new Button { Text = "▶", Size = new Size(45, 45), Location = new Point(_carouselContainer.Right + 15, 415), FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = Color.Gray };
+            var prevBtn = new Button { Text = "◀", Size = new Size(45, 45), Location = new Point(_carouselContainer.Left - 60, 415), FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = UIStyle.TextSecondary };
+            var nextBtn = new Button { Text = "▶", Size = new Size(45, 45), Location = new Point(_carouselContainer.Right + 15, 415), FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 12, FontStyle.Bold), ForeColor = UIStyle.TextSecondary };
             prevBtn.FlatAppearance.BorderSize = 0;
             nextBtn.FlatAppearance.BorderSize = 0;
             prevBtn.Click += (s, e) => NavigateCarousel(-1);
@@ -76,10 +76,10 @@ namespace RealView.Views
             this.Controls.Add(nextBtn);
 
             // 3. Pagination & Sharing
-            _paginationLabel = new Label { Text = "• • •", Font = new Font("Segoe UI", 18), AutoSize = true, Location = new Point((this.Width - 80) / 2, 720), ForeColor = Color.LightGray };
+            _paginationLabel = new Label { Text = "• • •", Font = new Font("Segoe UI", 18), AutoSize = true, Location = new Point((this.Width - 80) / 2, 720), ForeColor = UIStyle.TextTertiary };
             this.Controls.Add(_paginationLabel);
 
-            var sharePrompt = new Label { Text = "Share workout - Tag @hevyapp", Font = new Font("Segoe UI Semibold", 10), ForeColor = Color.FromArgb(160, 160, 160), AutoSize = true, Location = new Point((this.Width - 180) / 2, 765) };
+            var sharePrompt = new Label { Text = "Share workout - Tag @hevyapp", Font = new Font("Segoe UI Semibold", 10), ForeColor = UIStyle.TextTertiary, AutoSize = true, Location = new Point((this.Width - 180) / 2, 765) };
             this.Controls.Add(sharePrompt);
 
             var shareButtonsPanel = new FlowLayoutPanel { Size = new Size(500, 100), Location = new Point((this.Width - 500) / 2, 800), FlowDirection = FlowDirection.LeftToRight, WrapContents = false };
@@ -91,10 +91,10 @@ namespace RealView.Views
                     Size = new Size(50, 50), 
                     Location = new Point(20, 0),
                     FlatStyle = FlatStyle.Flat, 
-                    BackColor = Color.White,
+                    BackColor = UIStyle.Surface,
                     Text = "⚡"
                 };
-                btn.FlatAppearance.BorderColor = Color.FromArgb(230, 230, 230);
+                btn.FlatAppearance.BorderColor = UIStyle.Border;
                 // Circle button
                 btn.Paint += (s, e) => {
                     using (var path = new System.Drawing.Drawing2D.GraphicsPath()) {
@@ -102,7 +102,7 @@ namespace RealView.Views
                         btn.Region = new Region(path);
                     }
                 };
-                var lbl = new Label { Text = label, Size = new Size(90, 30), Location = new Point(0, 55), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 7) };
+                var lbl = new Label { Text = label, Size = new Size(90, 30), Location = new Point(0, 55), TextAlign = ContentAlignment.MiddleCenter, Font = UIStyle.Caption };
                 container.Controls.Add(btn);
                 container.Controls.Add(lbl);
                 shareButtonsPanel.Controls.Add(container);
@@ -115,7 +115,7 @@ namespace RealView.Views
                 Text = "DONE",
                 Size = new Size(400, 60),
                 BackColor = UIStyle.Primary,
-                ForeColor = Color.White,
+                ForeColor = UIStyle.TextOnPrimary,
                 FlatStyle = FlatStyle.Flat,
                 Font = UIStyle.SubHeader,
                 Location = new Point((this.Width - 400) / 2, this.Height - 100),

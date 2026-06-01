@@ -53,7 +53,7 @@ namespace RealView.Controls
 
             var bottomPanel = new Panel { Dock = DockStyle.Fill };
 
-            _saveBtn = new Button { Text = "SAVE ORDER", DialogResult = DialogResult.OK, Location = new Point(180, 12), Size = new Size(100, 35), FlatStyle = FlatStyle.Flat, BackColor = Color.FromArgb(40, 167, 69), ForeColor = Color.White, Font = new Font("Segoe UI", 9, FontStyle.Bold) };
+            _saveBtn = new Button { Text = "SAVE ORDER", DialogResult = DialogResult.OK, Location = new Point(180, 12), Size = new Size(100, 35), FlatStyle = FlatStyle.Flat, BackColor = UIStyle.Success, ForeColor = UIStyle.TextOnPrimary, Font = new Font("Segoe UI", 9, FontStyle.Bold) };
             _cancelBtn = new Button { Text = "CANCEL", DialogResult = DialogResult.Cancel, Location = new Point(290, 12), Size = new Size(80, 35), FlatStyle = FlatStyle.Flat };
 
             _saveBtn.Click += async (s, e) => await SaveOrderAsync();
