@@ -1,4 +1,4 @@
-namespace RealView
+namespace WorkoutTracker.RealView
 {
     partial class MainForm
     {

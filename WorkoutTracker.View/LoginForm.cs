@@ -1,8 +1,8 @@
-using Controller;
-using Data;
-using Data.Entities;
-using Data.Enums;
-using View;
+using WorkoutTracker.Controller;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
+using WorkoutTracker.View;
 
 namespace WorkoutTracker.View
 {

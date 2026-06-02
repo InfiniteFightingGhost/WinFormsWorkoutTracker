@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Data.Entities
+namespace WorkoutTracker.Data.Entities
 {
     [PrimaryKey(nameof(WorkoutId), nameof(ExerciseId))]
     [Index(nameof(OrderIndex))]

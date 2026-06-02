@@ -1,11 +1,11 @@
-﻿using Data.Enums;
+using WorkoutTracker.Data.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Data.DTOs
+namespace WorkoutTracker.Data.DTOs
 {
     public class CreateUserDTO
     {

@@ -1,13 +1,13 @@
-using Data;
-using Data.Entities;
-using Data.Enums;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using WorkoutTracker.Service.Implementations;
 using WorkoutTracker.Service.Interfaces;
-using Controller;
+using WorkoutTracker.Controller;
 
-namespace Tests
+namespace WorkoutTracker.Tests
 {
     [TestFixture]
     public class MuscleGroupTests
@@ -26,7 +26,7 @@ namespace Tests
 
             _context = new WorkoutDbContext(options);
             _authMock = new Mock<IAuthService>();
-            _service = new MuscleGroupService(_context, _authMock.Object);
+            _service = new MuscleGroupService(() => new WorkoutDbContext(options), _authMock.Object);
             _controller = new MuscleGroupController(_service);
         }
 
@@ -116,6 +116,7 @@ namespace Tests
 
             // Assert
             Assert.That(result.Name, Is.EqualTo("New Name"));
+            _context.ChangeTracker.Clear();
             var updated = await _context.MuscleGroups.FindAsync(group.Id);
             Assert.That(updated?.Name, Is.EqualTo("New Name"));
         }

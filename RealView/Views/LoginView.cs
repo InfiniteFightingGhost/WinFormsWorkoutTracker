@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace RealView.Views
+namespace WorkoutTracker.RealView.Views
 {
     public class LoginView : BaseView
     {

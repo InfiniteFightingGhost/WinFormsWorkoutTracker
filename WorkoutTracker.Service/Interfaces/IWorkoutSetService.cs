@@ -1,5 +1,5 @@
-using Data.DTOs;
-using Data.Entities;
+using WorkoutTracker.Data.DTOs;
+using WorkoutTracker.Data.Entities;
 
 namespace WorkoutTracker.Service.Interfaces
 {

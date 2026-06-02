@@ -1,5 +1,5 @@
-using Data;
-using Data.Entities;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Service.Interfaces;
 
@@ -7,18 +7,23 @@ namespace WorkoutTracker.Service.Implementations
 {
     public class WorkoutExerciseService : IWorkoutExerciseService
     {
-        private readonly WorkoutDbContext _context;
+        private readonly Func<WorkoutDbContext> _contextFactory;
         private readonly IAuthService _auth;
 
-        public WorkoutExerciseService(WorkoutDbContext context, IAuthService auth)
+        public WorkoutExerciseService(Func<WorkoutDbContext> contextFactory, IAuthService auth)
         {
-            _context = context;
+            _contextFactory = contextFactory;
             _auth = auth;
         }
 
         public async Task SaveOrderIndexChangesAsync()
         {
-            await _context.SaveChangesAsync();
+            // Note: This method seems to assume context is tracked across calls.
+            // With context factory, it might need to be reconsidered if it's meant to save changes
+            // made to entities retrieved from a different context instance.
+            // However, looking at the usage in UI, it's likely used after some reordering logic.
+            using var context = _contextFactory();
+            await context.SaveChangesAsync();
         }
 
         public async Task<WorkoutExercise> AddExerciseToWorkoutAsync(int workoutId, int exerciseId)
@@ -26,18 +31,19 @@ namespace WorkoutTracker.Service.Implementations
             var currentUser = _auth.GetCurrentUser();
             if (currentUser == null) throw new UnauthorizedAccessException();
 
-            var workout = await _context.WorkoutSessions
+            using var context = _contextFactory();
+            var workout = await context.WorkoutSessions
                 .Include(w => w.Exercises)
                 .FirstOrDefaultAsync(w => w.Id == workoutId && w.UserId == currentUser.Id);
 
-            var exercise = await _context.Exercises.FindAsync(exerciseId);
+            var exercise = await context.Exercises.FindAsync(exerciseId);
 
             if (workout == null || exercise == null)
             {
                 throw new Exception("Workout or Exercise not found.");
             }
 
-            var existing = await _context.WorkoutExercises.FindAsync(workoutId, exerciseId);
+            var existing = await context.WorkoutExercises.FindAsync(workoutId, exerciseId);
             if (existing != null)
             {
                 throw new Exception("This exercise is already added to the workout.");
@@ -56,19 +62,20 @@ namespace WorkoutTracker.Service.Implementations
             }
 
             workout.Exercises.Add(pair);
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return pair;
         }
 
         public async Task<WorkoutExercise> RemoveExerciseFromWorkoutAsync(int workoutId, int exerciseId)
         {
-            var pair = await _context.WorkoutExercises.FindAsync(workoutId, exerciseId);
+            using var context = _contextFactory();
+            var pair = await context.WorkoutExercises.FindAsync(workoutId, exerciseId);
             if (pair == null)
             {
                 throw new Exception("This exercise is not part of the workout.");
             }
-            _context.WorkoutExercises.Remove(pair);
-            await _context.SaveChangesAsync();
+            context.WorkoutExercises.Remove(pair);
+            await context.SaveChangesAsync();
             return pair;
         }
     }

@@ -1,4 +1,4 @@
-namespace Data.DTOs
+namespace WorkoutTracker.Data.DTOs
 {
     public class MuscleVolumeDTO
     {

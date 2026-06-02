@@ -1,5 +1,5 @@
 using System;
-using Data.Entities;
+using WorkoutTracker.Data.Entities;
 
 namespace WorkoutTracker.View.Services
 {

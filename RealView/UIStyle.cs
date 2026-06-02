@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace RealView
+namespace WorkoutTracker.RealView
 {
     public enum ThemeType
     {

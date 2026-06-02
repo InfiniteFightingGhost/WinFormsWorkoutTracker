@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Data.Migrations
+namespace WorkoutTracker.Data.Migrations
 {
     /// <inheritdoc />
     public partial class workoutDescription : Migration

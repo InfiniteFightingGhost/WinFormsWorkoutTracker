@@ -1,6 +1,6 @@
-﻿using Controller;
-using Data.DTOs;
-using Data.Enums;
+using WorkoutTracker.Controller;
+using WorkoutTracker.Data.DTOs;
+using WorkoutTracker.Data.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace View
+namespace WorkoutTracker.View
 {
     public partial class RegistrationForm : Form
     {

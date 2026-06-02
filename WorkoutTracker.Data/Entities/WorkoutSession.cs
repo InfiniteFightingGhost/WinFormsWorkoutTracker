@@ -1,8 +1,8 @@
-﻿using Data.Enums;
+using WorkoutTracker.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-namespace Data.Entities
+namespace WorkoutTracker.Data.Entities
 {
     [Index(nameof(Start))]
     public class WorkoutSession

@@ -1,13 +1,13 @@
-using Data;
-using Data.Entities;
-using Data.Enums;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using WorkoutTracker.Service.Implementations;
 using WorkoutTracker.Service.Interfaces;
-using Controller;
+using WorkoutTracker.Controller;
 
-namespace Tests
+namespace WorkoutTracker.Tests
 {
     [TestFixture]
     public class UserTests
@@ -26,7 +26,7 @@ namespace Tests
 
             _context = new WorkoutDbContext(options);
             _authMock = new Mock<IAuthService>();
-            _service = new UserService(_context, _authMock.Object);
+            _service = new UserService(() => new WorkoutDbContext(options), _authMock.Object);
             _controller = new UserController(_service);
         }
 
@@ -80,6 +80,7 @@ namespace Tests
             await _service.UpdateHeightAsync(user.Id, 180);
 
             // Assert
+            _context.ChangeTracker.Clear();
             var updated = await _context.Users.FindAsync(user.Id);
             Assert.That(updated?.Height, Is.EqualTo(180));
         }
@@ -104,6 +105,7 @@ namespace Tests
             await _service.UpdateProfileAsync(user.Id, Gender.Female, 160, 55);
 
             // Assert
+            _context.ChangeTracker.Clear();
             var updated = await _context.Users.FindAsync(user.Id);
             Assert.That(updated?.Gender, Is.EqualTo(Gender.Female));
             Assert.That(updated?.Height, Is.EqualTo(160));
@@ -139,6 +141,7 @@ namespace Tests
             await _controller.UpdatePhotoAsync(user.Id, "new_url");
 
             // Assert
+            _context.ChangeTracker.Clear();
             var updated = await _context.Users.FindAsync(user.Id);
             Assert.That(updated?.PhotoUrl, Is.EqualTo("new_url"));
         }

@@ -8,8 +8,8 @@
     <ProjectGuid>{7EFA9006-A59A-40D2-9F71-515915DA950F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>LazyCrudProjectTemplate</RootNamespace>
-    <AssemblyName>LazyCrudProjectTemplate</AssemblyName>
+    <RootNamespace>WorkoutTracker.TestingProject</RootNamespace>
+    <AssemblyName>WorkoutTracker.TestingProject</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

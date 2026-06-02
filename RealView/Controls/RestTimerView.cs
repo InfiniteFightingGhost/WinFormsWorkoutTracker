@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace RealView.Controls
+namespace WorkoutTracker.RealView.Controls
 {
     public class RestTimerView : UserControl
     {

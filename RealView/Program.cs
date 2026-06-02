@@ -1,4 +1,4 @@
-namespace RealView
+namespace WorkoutTracker.RealView
 {
     internal static class Program
     {

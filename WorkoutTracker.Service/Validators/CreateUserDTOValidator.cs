@@ -1,4 +1,4 @@
-using Data.DTOs;
+using WorkoutTracker.Data.DTOs;
 using FluentValidation;
 
 namespace WorkoutTracker.Service.Validators

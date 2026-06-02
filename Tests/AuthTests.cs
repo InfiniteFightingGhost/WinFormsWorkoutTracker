@@ -1,15 +1,15 @@
-using Data;
-using Data.DTOs;
-using Data.Entities;
-using Data.Enums;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.DTOs;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using WorkoutTracker.Service.Implementations;
-using Controller;
+using WorkoutTracker.Controller;
 
-namespace Tests
+namespace WorkoutTracker.Tests
 {
     [TestFixture]
     public class AuthTests
@@ -28,7 +28,7 @@ namespace Tests
 
             _context = new WorkoutDbContext(options);
             _validatorMock = new Mock<IValidator<CreateUserDTO>>();
-            _service = new AuthService(_context, _validatorMock.Object);
+            _service = new AuthService(() => new WorkoutDbContext(options), _validatorMock.Object);
             _controller = new AuthController(_service);
         }
 

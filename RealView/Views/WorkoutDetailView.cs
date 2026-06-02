@@ -2,10 +2,10 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
-using Data.Entities;
-using RealView.Controls;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.RealView.Controls;
 
-namespace RealView.Views
+namespace WorkoutTracker.RealView.Views
 {
     public class WorkoutDetailView : BaseView
     {

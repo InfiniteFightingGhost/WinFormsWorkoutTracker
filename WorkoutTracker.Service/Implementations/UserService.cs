@@ -1,6 +1,6 @@
-using Data;
-using Data.Entities;
-using Data.Enums;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Service.Interfaces;
 
@@ -8,24 +8,26 @@ namespace WorkoutTracker.Service.Implementations
 {
     public class UserService : IUserService
     {
-        private readonly WorkoutDbContext _context;
+        private readonly Func<WorkoutDbContext> _contextFactory;
         private readonly IAuthService _auth;
 
-        public UserService(WorkoutDbContext context, IAuthService auth)
+        public UserService(Func<WorkoutDbContext> contextFactory, IAuthService auth)
         {
-            _context = context;
+            _contextFactory = contextFactory;
             _auth = auth;
         }
 
         public async Task<ICollection<User>> GetAllAsync()
         {
             _auth.IsAuthenticated(UserRole.Admin);
-            return await _context.Users.ToListAsync();
+            using var context = _contextFactory();
+            return await context.Users.ToListAsync();
         }
 
         public async Task<User?> GetByIdAsync(int id)
         {
-            return await _context.Users.FindAsync(id);
+            using var context = _contextFactory();
+            return await context.Users.FindAsync(id);
         }
 
         public async Task<User?> UpdateHeightAsync(int id, decimal height)
@@ -34,13 +36,14 @@ namespace WorkoutTracker.Service.Implementations
             
             if (height <= 0) throw new Exception("Height must be positive.");
 
-            var user = await _context.Users.FindAsync(id);
+            using var context = _contextFactory();
+            var user = await context.Users.FindAsync(id);
             if (user == null)
             {
                 throw new Exception("User not found.");
             }
             user.Height = height;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return user;
         }
 
@@ -50,26 +53,28 @@ namespace WorkoutTracker.Service.Implementations
 
             if (weight <= 0) throw new Exception("Weight must be positive.");
 
-            var user = await _context.Users.FindAsync(id);
+            using var context = _contextFactory();
+            var user = await context.Users.FindAsync(id);
             if (user == null)
             {
                 throw new Exception("User not found.");
             }
             user.Weight = weight;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return user;
         }
 
         public async Task<User?> UpdateGenderAsync(int id, Gender gender)
         {
             _auth.IsAuthenticated(UserRole.Admin, id);
-            var user = await _context.Users.FindAsync(id);
+            using var context = _contextFactory();
+            var user = await context.Users.FindAsync(id);
             if (user == null)
             {
                 throw new Exception("User not found.");
             }
             user.Gender = gender;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return user;
         }
 
@@ -80,7 +85,8 @@ namespace WorkoutTracker.Service.Implementations
             if (height <= 0) throw new Exception("Height must be positive.");
             if (weight <= 0) throw new Exception("Weight must be positive.");
 
-            var user = await _context.Users.FindAsync(id);
+            using var context = _contextFactory();
+            var user = await context.Users.FindAsync(id);
             if (user == null)
             {
                 throw new Exception("User not found.");
@@ -88,20 +94,21 @@ namespace WorkoutTracker.Service.Implementations
             user.Gender = gender;
             user.Height = height;
             user.Weight = weight;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return user;
         }
 
         public async Task<User?> UpdatePhotoAsync(int id, string photoUrl)
         {
             _auth.IsAuthenticated(UserRole.Admin, id);
-            var user = await _context.Users.FindAsync(id);
+            using var context = _contextFactory();
+            var user = await context.Users.FindAsync(id);
             if (user == null)
             {
                 throw new Exception("User not found.");
             }
             user.PhotoUrl = photoUrl;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return user;
         }
 
@@ -109,13 +116,14 @@ namespace WorkoutTracker.Service.Implementations
         {
             _auth.IsAuthenticated(UserRole.Admin, id);
 
-            var user = await _context.Users.FindAsync(id);
+            using var context = _contextFactory();
+            var user = await context.Users.FindAsync(id);
             if (user == null)
             {
                 throw new Exception("User not found.");
             }
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            context.Users.Remove(user);
+            await context.SaveChangesAsync();
             return user;
         }
     }

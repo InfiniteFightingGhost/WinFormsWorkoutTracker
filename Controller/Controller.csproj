@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\WorkoutTracker.Data\Data.csproj" />
-    <ProjectReference Include="..\WorkoutTracker.Service\WorkoutTracker.Service.csproj" />
+    <ProjectReference Include="..\WorkoutTracker.Service\Service.csproj" />
   </ItemGroup>
 
 </Project>

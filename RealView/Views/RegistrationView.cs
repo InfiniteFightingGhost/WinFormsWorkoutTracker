@@ -1,12 +1,12 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using Data.DTOs;
-using Data.Enums;
-using Data.Entities;
+using WorkoutTracker.Data.DTOs;
+using WorkoutTracker.Data.Enums;
+using WorkoutTracker.Data.Entities;
 using System.Threading.Tasks;
 
-namespace RealView.Views
+namespace WorkoutTracker.RealView.Views
 {
     public class RegistrationView : BaseView
     {

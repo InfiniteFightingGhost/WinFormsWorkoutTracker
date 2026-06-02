@@ -1,11 +1,11 @@
-using Data;
-using Data.Entities;
-using Data.Enums;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Service.Implementations;
-using Controller;
+using WorkoutTracker.Controller;
 
-namespace Tests
+namespace WorkoutTracker.Tests
 {
     [TestFixture]
     public class WorkoutSetTests
@@ -22,7 +22,7 @@ namespace Tests
                 .Options;
 
             _context = new WorkoutDbContext(options);
-            _service = new WorkoutSetService(_context);
+            _service = new WorkoutSetService(() => new WorkoutDbContext(options));
             _controller = new WorkoutSetController(_service);
         }
 

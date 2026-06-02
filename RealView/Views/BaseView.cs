@@ -2,10 +2,19 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-namespace RealView.Views
+namespace WorkoutTracker.RealView.Views
 {
     public class BaseView : UserControl
     {
+        public BaseView()
+        {
+            this.DoubleBuffered = true;
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint | 
+                          ControlStyles.OptimizedDoubleBuffer | 
+                          ControlStyles.UserPaint | 
+                          ControlStyles.ResizeRedraw, true);
+        }
+
         public virtual void OnNavigatedTo() { }
         
         protected void ShowLoading(bool show)

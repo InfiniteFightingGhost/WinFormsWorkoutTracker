@@ -3,10 +3,10 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
 using System.Threading.Tasks;
-using RealView.Controls;
+using WorkoutTracker.RealView.Controls;
 using System.Drawing.Drawing2D;
 
-namespace RealView.Views
+namespace WorkoutTracker.RealView.Views
 {
     public class SettingsView : BaseView
     {

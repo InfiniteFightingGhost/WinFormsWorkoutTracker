@@ -1,5 +1,5 @@
-using Data;
-using Data.Entities;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Service.Interfaces;
@@ -8,23 +8,25 @@ namespace WorkoutTracker.Service.Implementations
 {
     public class WorkoutService : IWorkoutService
     {
-        private readonly WorkoutDbContext _context;
+        private readonly Func<WorkoutDbContext> _contextFactory;
         private readonly IValidator<Workout> _validator;
 
-        public WorkoutService(WorkoutDbContext context, IValidator<Workout> validator)
+        public WorkoutService(Func<WorkoutDbContext> contextFactory, IValidator<Workout> validator)
         {
-            _context = context;
+            _contextFactory = contextFactory;
             _validator = validator;
         }
 
         public async Task<ICollection<Workout>> GetAllAsync()
         {
-            return await _context.Workouts.ToListAsync();
+            using var context = _contextFactory();
+            return await context.Workouts.ToListAsync();
         }
 
         public async Task<Workout?> GetByIdAsync(int id)
         {
-            return await _context.Workouts.FindAsync(id);
+            using var context = _contextFactory();
+            return await context.Workouts.FindAsync(id);
         }
 
         public async Task<Workout> CreateAsync(Workout workout)
@@ -35,14 +37,16 @@ namespace WorkoutTracker.Service.Implementations
                 throw new ValidationException(validationResult.Errors);
             }
 
-            _context.Workouts.Add(workout);
-            await _context.SaveChangesAsync();
+            using var context = _contextFactory();
+            context.Workouts.Add(workout);
+            await context.SaveChangesAsync();
             return workout;
         }
 
         public async Task<Workout> UpdateAsync(int id, string title, string description)
         {
-            var workout = await _context.Workouts.FindAsync(id);
+            using var context = _contextFactory();
+            var workout = await context.Workouts.FindAsync(id);
             if (workout == null)
             {
                 throw new Exception("Workout not found.");
@@ -57,19 +61,20 @@ namespace WorkoutTracker.Service.Implementations
                 throw new ValidationException(validationResult.Errors);
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return workout;
         }
 
         public async Task<Workout> DeleteAsync(int id)
         {
-            var workout = await _context.Workouts.FindAsync(id);
+            using var context = _contextFactory();
+            var workout = await context.Workouts.FindAsync(id);
             if (workout == null)
             {
                 throw new Exception("Workout not found.");
             }
-            _context.Workouts.Remove(workout);
-            await _context.SaveChangesAsync();
+            context.Workouts.Remove(workout);
+            await context.SaveChangesAsync();
             return workout;
         }
     }

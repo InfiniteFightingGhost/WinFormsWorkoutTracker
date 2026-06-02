@@ -1,9 +1,9 @@
-﻿using Data.Entities;
-using Data.Enums;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace Data
+namespace WorkoutTracker.Data
 {
     public class WorkoutDbContext : DbContext
     {

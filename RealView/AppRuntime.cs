@@ -1,15 +1,19 @@
-using Controller;
-using Data;
-using RealView.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using WorkoutTracker.Controller;
+using WorkoutTracker.Data;
+using WorkoutTracker.RealView.Services;
 using WorkoutTracker.Service.Implementations;
 using WorkoutTracker.Service.Interfaces;
 using WorkoutTracker.Service.Validators;
 
-namespace RealView
+namespace WorkoutTracker.RealView
 {
     public static class AppRuntime
     {
-        public static WorkoutDbContext Context { get; private set; } = null!;
+        private static DbContextOptions<WorkoutDbContext> _options = null!;
+
+        public static WorkoutDbContext GetContext() => new WorkoutDbContext(_options);
         
         // Services
         public static IAuthService AuthService { get; private set; } = null!;
@@ -37,7 +41,15 @@ namespace RealView
 
         public static void Initialize()
         {
-            Context = new WorkoutDbContext();
+            var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            var builder = new DbContextOptionsBuilder<WorkoutDbContext>();
+            builder.UseSqlServer(config.GetConnectionString("Default"));
+            _options = builder.Options;
+
+            var context = GetContext();
 
             // Initialize Validators
             var createUserValidator = new CreateUserDTOValidator();
@@ -45,14 +57,14 @@ namespace RealView
             var workoutValidator = new WorkoutValidator();
 
             // Initialize Services
-            AuthService = new AuthService(Context, createUserValidator);
-            ExerciseService = new ExerciseService(Context, exerciseValidator);
-            MuscleGroupService = new MuscleGroupService(Context, AuthService);
-            UserService = new UserService(Context, AuthService);
-            WorkoutService = new WorkoutService(Context, workoutValidator);
-            WorkoutExerciseService = new WorkoutExerciseService(Context, AuthService);
-            WorkoutSessionService = new WorkoutSessionService(Context, AuthService);
-            WorkoutSetService = new WorkoutSetService(Context);
+            AuthService = new AuthService(() => GetContext(), createUserValidator);
+            ExerciseService = new ExerciseService(() => GetContext(), exerciseValidator);
+            MuscleGroupService = new MuscleGroupService(() => GetContext(), AuthService);
+            UserService = new UserService(() => GetContext(), AuthService);
+            WorkoutService = new WorkoutService(() => GetContext(), workoutValidator);
+            WorkoutExerciseService = new WorkoutExerciseService(() => GetContext(), AuthService);
+            WorkoutSessionService = new WorkoutSessionService(() => GetContext(), AuthService);
+            WorkoutSetService = new WorkoutSetService(() => GetContext());
 
             // Initialize Controllers
             Auth = new AuthController(AuthService);

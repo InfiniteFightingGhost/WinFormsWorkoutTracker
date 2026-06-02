@@ -1,13 +1,13 @@
-using Data;
-using Data.Entities;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using WorkoutTracker.Service.Implementations;
-using Controller;
+using WorkoutTracker.Controller;
 
-namespace Tests
+namespace WorkoutTracker.Tests
 {
     [TestFixture]
     public class ExerciseTests
@@ -26,7 +26,7 @@ namespace Tests
 
             _context = new WorkoutDbContext(options);
             _validatorMock = new Mock<IValidator<Exercise>>();
-            _service = new ExerciseService(_context, _validatorMock.Object);
+            _service = new ExerciseService(() => new WorkoutDbContext(options), _validatorMock.Object);
             _controller = new ExerciseController(_service);
         }
 

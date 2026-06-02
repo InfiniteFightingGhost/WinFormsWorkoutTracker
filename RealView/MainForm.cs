@@ -2,10 +2,10 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using RealView.Controls;
-using RealView.Services;
+using WorkoutTracker.RealView.Controls;
+using WorkoutTracker.RealView.Services;
 
-namespace RealView
+namespace WorkoutTracker.RealView
 {
     public partial class MainForm : Form
     {
@@ -14,6 +14,7 @@ namespace RealView
         private FlowLayoutPanel _sidebarPanel = null!;
         private Label _titleLabel = null!;
         private Panel _sidebarIndicator = null!;
+        private System.Windows.Forms.Timer _layoutDebounceTimer = null!;
 
         [DllImport("user32.dll")]
         public static extern bool ReleaseCapture();
@@ -49,7 +50,13 @@ namespace RealView
             InitializeComponent();
             SetupShell();
             
-            this.Resize += MainForm_Resize;
+            _layoutDebounceTimer = new System.Windows.Forms.Timer { Interval = 15 };
+            _layoutDebounceTimer.Tick += (s, e) => {
+                _layoutDebounceTimer.Stop();
+                UpdateSidebarMode();
+            };
+
+            this.Resize += (s, e) => _layoutDebounceTimer.Start();
 
             // Listen for workout state changes to update sidebar
             AppRuntime.WorkoutState.WorkoutStarted += (s, e) => SetupSidebarButtons();

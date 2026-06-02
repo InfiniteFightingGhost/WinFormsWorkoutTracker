@@ -1,4 +1,4 @@
-﻿namespace Data.Enums
+namespace WorkoutTracker.Data.Enums
 {
     public enum WorkoutStatus
     {

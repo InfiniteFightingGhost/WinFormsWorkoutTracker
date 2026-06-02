@@ -1,9 +1,7 @@
-﻿using Data.Entities;
+using WorkoutTracker.Data.Entities;
 using WorkoutTracker.Service.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
-namespace Controller
+namespace WorkoutTracker.Controller
 {
     public class ExerciseController
     {
@@ -42,6 +40,16 @@ namespace Controller
         public async Task<Exercise> DeleteExerciseAsync(int id)
         {
             return await _exerciseService.DeleteAsync(id);
+        }
+
+        public async Task<ICollection<Exercise>> GetExercisesWithFiltration(ICollection<int> muscleGroupIds, string name)
+        {
+            return await _exerciseService.GetExercisesWithFiltration(muscleGroupIds, name);
+        }
+
+        public async Task<ICollection<Exercise>> BulkCreateExercisesAsync(ICollection<Exercise> exercises)
+        {
+            return await _exerciseService.BulkCreateAsync(exercises);
         }
     }
 }

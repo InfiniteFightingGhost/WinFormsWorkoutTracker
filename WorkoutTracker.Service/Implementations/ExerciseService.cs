@@ -1,5 +1,6 @@
-using Data;
-using Data.Entities;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Service.Interfaces;
@@ -8,30 +9,33 @@ namespace WorkoutTracker.Service.Implementations
 {
     public class ExerciseService : IExerciseService
     {
-        private readonly WorkoutDbContext _context;
+        private readonly Func<WorkoutDbContext> _contextFactory;
         private readonly IValidator<Exercise> _validator;
 
-        public ExerciseService(WorkoutDbContext context, IValidator<Exercise> validator)
+        public ExerciseService(Func<WorkoutDbContext> contextFactory, IValidator<Exercise> validator)
         {
-            _context = context;
+            _contextFactory = contextFactory;
             _validator = validator;
         }
 
         public async Task<ICollection<Exercise>> GetAllAsync()
         {
-            return await _context.Exercises.ToListAsync();
+            using var context = _contextFactory();
+            return await context.Exercises.ToListAsync();
         }
 
         public async Task<ICollection<Exercise>> GetAllByMuscleGroupAsync(int muscleGroupId)
         {
-            return await _context.Exercises
+            using var context = _contextFactory();
+            return await context.Exercises
                 .Where(e => e.MuscleGroupId == muscleGroupId)
                 .ToListAsync();
         }
 
         public async Task<Exercise?> GetByIdAsync(int id)
         {
-            return await _context.Exercises.FindAsync(id);
+            using var context = _contextFactory();
+            return await context.Exercises.FindAsync(id);
         }
 
         public async Task<Exercise> CreateAsync(Exercise exercise)
@@ -42,14 +46,16 @@ namespace WorkoutTracker.Service.Implementations
                 throw new ValidationException(validationResult.Errors);
             }
 
-            _context.Exercises.Add(exercise);
-            await _context.SaveChangesAsync();
+            using var context = _contextFactory();
+            context.Exercises.Add(exercise);
+            await context.SaveChangesAsync();
             return exercise;
         }
 
         public async Task<Exercise> UpdateAsync(int id, string name, string description)
         {
-            var exercise = await _context.Exercises.FindAsync(id);
+            using var context = _contextFactory();
+            var exercise = await context.Exercises.FindAsync(id);
             if (exercise == null)
             {
                 throw new Exception("Exercise not found.");
@@ -64,20 +70,47 @@ namespace WorkoutTracker.Service.Implementations
                 throw new ValidationException(validationResult.Errors);
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return exercise;
         }
 
         public async Task<Exercise> DeleteAsync(int id)
         {
-            var exercise = await _context.Exercises.FindAsync(id);
+            using var context = _contextFactory();
+            var exercise = await context.Exercises.FindAsync(id);
             if (exercise == null)
             {
                 throw new Exception("Exercise not found.");
             }
-            _context.Exercises.Remove(exercise);
-            await _context.SaveChangesAsync();
+            context.Exercises.Remove(exercise);
+            await context.SaveChangesAsync();
             return exercise;
+        }
+
+        public async Task<ICollection<Exercise>> GetExercisesWithFiltration(ICollection<int> muscleGroupIds, string name)
+        {
+            using var context = _contextFactory();
+            var query = context.Exercises.AsQueryable();
+            if(muscleGroupIds.Any())
+            {
+                query = query.Where(e => muscleGroupIds.Contains(e.MuscleGroupId));
+            }
+            if(!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(e => e.Name.Contains(name));
+            }
+            return await query.ToListAsync();
+        }
+
+        public async Task<ICollection<Exercise>> BulkCreateAsync(ICollection<Exercise> exercises)
+        {
+            if(exercises.Count == 0)  return new List<Exercise>();
+
+            using var context = _contextFactory();
+            context.Exercises.AddRange(exercises);
+            await context.SaveChangesAsync();
+
+            return exercises;
         }
     }
 }

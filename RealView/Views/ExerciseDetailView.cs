@@ -1,8 +1,8 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using Data.Entities;
-using Data.DTOs;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.DTOs;
 using System.Collections.Generic;
 using System.Linq;
 using LiveChartsCore;
@@ -13,7 +13,7 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using LiveChartsCore.SkiaSharpView.Painting.Effects;
 
-namespace RealView.Views
+namespace WorkoutTracker.RealView.Views
 {
     public class ExerciseDetailView : BaseView
     {

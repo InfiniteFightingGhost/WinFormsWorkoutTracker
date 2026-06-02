@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using RealView.Views;
+using WorkoutTracker.RealView.Views;
 
-namespace RealView.Services
+namespace WorkoutTracker.RealView.Services
 {
     public class NavigationService
     {
@@ -52,8 +53,16 @@ namespace RealView.Services
             if (_currentView == view && view.Visible) return;
 
             _transitionTimer?.Stop();
-            
+
+            foreach(Control ctrl in _container.Controls)
+            {
+                if(ctrl != view && !_viewCache.ContainsValue(ctrl as UserControl))
+                {
+                    ctrl.Dispose();
+                }
+            }
             _container.Controls.Clear();
+
             view.Dock = DockStyle.Fill;
             
             // Setup for fade in

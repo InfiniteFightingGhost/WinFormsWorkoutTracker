@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("LazyCrudProjectTemplate")]
+[assembly: AssemblyTitle("WorkoutTracker.TestingProject")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Felipe Paixão da Silva")]
-[assembly: AssemblyProduct("LazyCrudProjectTemplate")]
+[assembly: AssemblyProduct("WorkoutTracker.TestingProject")]
 [assembly: AssemblyCopyright("Copyright © Felipe Paixão da Silva 2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

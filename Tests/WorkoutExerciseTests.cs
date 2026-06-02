@@ -1,13 +1,13 @@
-using Data;
-using Data.Entities;
-using Data.Enums;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using WorkoutTracker.Service.Implementations;
 using WorkoutTracker.Service.Interfaces;
-using Controller;
+using WorkoutTracker.Controller;
 
-namespace Tests
+namespace WorkoutTracker.Tests
 {
     [TestFixture]
     public class WorkoutExerciseTests
@@ -26,7 +26,7 @@ namespace Tests
 
             _context = new WorkoutDbContext(options);
             _authMock = new Mock<IAuthService>();
-            _service = new WorkoutExerciseService(_context, _authMock.Object);
+            _service = new WorkoutExerciseService(() => new WorkoutDbContext(options), _authMock.Object);
             _controller = new WorkoutExerciseController(_service);
         }
 

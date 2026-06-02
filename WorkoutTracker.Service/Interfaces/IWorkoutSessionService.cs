@@ -1,4 +1,4 @@
-using Data.Entities;
+using WorkoutTracker.Data.Entities;
 
 namespace WorkoutTracker.Service.Interfaces
 {

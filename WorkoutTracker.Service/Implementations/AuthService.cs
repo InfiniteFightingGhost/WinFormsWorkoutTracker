@@ -1,7 +1,7 @@
-using Data;
-using Data.DTOs;
-using Data.Entities;
-using Data.Enums;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.DTOs;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Service.Interfaces;
@@ -11,13 +11,13 @@ namespace WorkoutTracker.Service.Implementations
 {
     public class AuthService : IAuthService
     {
-        private readonly WorkoutDbContext _context;
+        private readonly Func<WorkoutDbContext> _contextFactory;
         private readonly IValidator<CreateUserDTO> _createUserValidator;
         private User? _currentUser = null;
 
-        public AuthService(WorkoutDbContext context, IValidator<CreateUserDTO> createUserValidator)
+        public AuthService(Func<WorkoutDbContext> contextFactory, IValidator<CreateUserDTO> createUserValidator)
         {
-            _context = context;
+            _contextFactory = contextFactory;
             _createUserValidator = createUserValidator;
         }
 
@@ -29,11 +29,12 @@ namespace WorkoutTracker.Service.Implementations
                 throw new ValidationException(validationResult.Errors);
             }
 
-            if (await _context.Users.AnyAsync(u => u.Username == dto.Username))
+            using var context = _contextFactory();
+            if (await context.Users.AnyAsync(u => u.Username == dto.Username))
             {
                 throw new Exception("Username already exists.");
             }
-            if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
+            if (await context.Users.AnyAsync(u => u.Email == dto.Email))
             {
                 throw new Exception("A user with this email already exists.");
             }
@@ -49,20 +50,21 @@ namespace WorkoutTracker.Service.Implementations
                 Role = UserRole.User
             };
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
             _currentUser = user; 
             return user;
         }
 
         public async Task<User?> LoginAsync(string username, string password)
         {
-            if (!await _context.Users.AnyAsync(u => u.Username == username))
+            using var context = _contextFactory();
+            if (!await context.Users.AnyAsync(u => u.Username == username))
             {
                 throw new Exception("A user with this username doesn't exist");
             }
 
-            var user = await _context.Users
+            var user = await context.Users
                 .Include(u => u.Sessions)
                 .FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
 

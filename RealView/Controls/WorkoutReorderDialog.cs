@@ -1,6 +1,6 @@
-﻿using Accessibility;
-using Controller;
-using Data.Entities;
+using Accessibility;
+using WorkoutTracker.Controller;
+using WorkoutTracker.Data.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace RealView.Controls
+namespace WorkoutTracker.RealView.Controls
 {
     public partial class WorkoutReorderDialog : Form
     {

@@ -1,10 +1,9 @@
-﻿using Data.DTOs;
-using Data.Entities;
-using Data.Enums;
+using WorkoutTracker.Data.DTOs;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using WorkoutTracker.Service.Interfaces;
-using System.Threading.Tasks;
 
-namespace Controller
+namespace WorkoutTracker.Controller
 {
     public class AuthController
     {

@@ -1,6 +1,6 @@
-using Data;
-using Data.Entities;
-using Data.Enums;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Service.Interfaces;
 
@@ -8,37 +8,39 @@ namespace WorkoutTracker.Service.Implementations
 {
     public class WorkoutSessionService : IWorkoutSessionService
     {
-        private readonly WorkoutDbContext _context;
+        private readonly Func<WorkoutDbContext> _contextFactory;
         private readonly IAuthService _auth;
 
-        public WorkoutSessionService(WorkoutDbContext context, IAuthService auth)
+        public WorkoutSessionService(Func<WorkoutDbContext> contextFactory, IAuthService auth)
         {
-            _context = context;
+            _contextFactory = contextFactory;
             _auth = auth;
         }
 
         public async Task<ICollection<WorkoutSession>> GetAllAsync()
         {
-            _auth.IsAuthenticated(UserRole.User);
-            return await _context.WorkoutSessions.ToListAsync();
+            using var context = _contextFactory();
+            return await context.WorkoutSessions.ToListAsync();
         }
 
         public async Task<WorkoutSession?> GetByIdAsync(int id)
         {
-            return await _context.WorkoutSessions.FindAsync(id);
+            using var context = _contextFactory();
+            return await context.WorkoutSessions.FindAsync(id);
         }
 
         public async Task<WorkoutSession> CreateAsync(WorkoutSession workoutSession)
         {
-            _auth.IsAuthenticated(UserRole.User);
-            _context.WorkoutSessions.Add(workoutSession);
-            await _context.SaveChangesAsync();
+            using var context = _contextFactory();
+            context.WorkoutSessions.Add(workoutSession);
+            await context.SaveChangesAsync();
             return workoutSession;
         }
 
         public async Task<ICollection<WorkoutSession>> GetAllUserSessionsAsync(int id)
         {
-            return await _context.WorkoutSessions.Where(ws => ws.UserId == id).ToListAsync();
+            using var context = _contextFactory();
+            return await context.WorkoutSessions.Where(ws => ws.UserId == id).ToListAsync();
         }
 
         public ICollection<WorkoutSession>? GetAllCurrentUserSessions()
@@ -48,7 +50,8 @@ namespace WorkoutTracker.Service.Implementations
 
         public async Task<WorkoutSession> UpdateAsync(int id, DateTime end, string? title, string? notes, string? photoUrl = null)
         {
-            var session = await _context.WorkoutSessions.FindAsync(id);
+            using var context = _contextFactory();
+            var session = await context.WorkoutSessions.FindAsync(id);
             if (session == null)
             {
                 throw new Exception("Workout session not found.");
@@ -64,37 +67,40 @@ namespace WorkoutTracker.Service.Implementations
             session.PhotoUrl = photoUrl;
             session.Status = WorkoutStatus.Finished;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return session;
         }
 
         public async Task<WorkoutSession> UpdateStatusAsync(int id)
         {
-            var session = await _context.WorkoutSessions.FindAsync(id);
+            using var context = _contextFactory();
+            var session = await context.WorkoutSessions.FindAsync(id);
             if (session == null)
             {
                 throw new Exception("Workout session not found.");
             }
             session.Status = WorkoutStatus.Finished;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return session;
         }
 
         public async Task<WorkoutSession> DeleteAsync(int id)
         {
-            var session = await _context.WorkoutSessions.FindAsync(id);
+            using var context = _contextFactory();
+            var session = await context.WorkoutSessions.FindAsync(id);
             if (session == null)
             {
                 throw new Exception("Workout session not found.");
             }
-            _context.WorkoutSessions.Remove(session);
-            await _context.SaveChangesAsync();
+            context.WorkoutSessions.Remove(session);
+            await context.SaveChangesAsync();
             return session;
         }
 
         public async Task<WorkoutSession?> GetActiveSessionAsync(int userId)
         {
-            return await _context.WorkoutSessions
+            using var context = _contextFactory();
+            return await context.WorkoutSessions
                 .Include(w => w.Exercises)
                     .ThenInclude(we => we.Exercise)
                 .Include(s => s.Exercises)

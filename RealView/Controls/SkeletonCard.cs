@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace RealView.Controls
+namespace WorkoutTracker.RealView.Controls
 {
     public class SkeletonCard : UserControl
     {

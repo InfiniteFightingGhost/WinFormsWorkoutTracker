@@ -1,12 +1,12 @@
-﻿using Controller;
-using Data;
+using WorkoutTracker.Controller;
+using WorkoutTracker.Data;
 using System;
 using System.Windows.Forms;
 using WorkoutTracker.View;
 using WorkoutTracker.View.Services;
 using WorkoutTracker.View.Views;
 
-namespace View
+namespace WorkoutTracker.View
 {
     public partial class UserForm : Form
     {

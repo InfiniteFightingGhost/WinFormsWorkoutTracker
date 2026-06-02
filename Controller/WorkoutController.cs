@@ -1,9 +1,7 @@
-﻿using Data.Entities;
+using WorkoutTracker.Data.Entities;
 using WorkoutTracker.Service.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
-namespace Controller
+namespace WorkoutTracker.Controller
 {
     public class WorkoutController
     {

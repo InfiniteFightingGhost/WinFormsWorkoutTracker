@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using System.ComponentModel.DataAnnotations;
 
-namespace Data.Entities
+namespace WorkoutTracker.Data.Entities
 {
     public class Workout
     {

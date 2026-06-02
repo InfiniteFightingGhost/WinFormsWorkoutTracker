@@ -18,8 +18,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Controller\Controller.csproj" />
+    <ProjectReference Include="..\Utility\Utility.csproj" />
     <ProjectReference Include="..\WorkoutTracker.Data\Data.csproj" />
-    <ProjectReference Include="..\WorkoutTracker.Service\WorkoutTracker.Service.csproj" />
+    <ProjectReference Include="..\WorkoutTracker.Service\Service.csproj" />
   </ItemGroup>
 
 </Project>

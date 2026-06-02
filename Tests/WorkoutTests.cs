@@ -1,13 +1,13 @@
-using Data;
-using Data.Entities;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using WorkoutTracker.Service.Implementations;
-using Controller;
+using WorkoutTracker.Controller;
 
-namespace Tests
+namespace WorkoutTracker.Tests
 {
     [TestFixture]
     public class WorkoutTests
@@ -26,7 +26,7 @@ namespace Tests
 
             _context = new WorkoutDbContext(options);
             _validatorMock = new Mock<IValidator<Workout>>();
-            _service = new WorkoutService(_context, _validatorMock.Object);
+            _service = new WorkoutService(() => new WorkoutDbContext(options), _validatorMock.Object);
             _controller = new WorkoutController(_service);
         }
 
@@ -106,6 +106,7 @@ namespace Tests
 
             // Assert
             Assert.That(result.Title, Is.EqualTo("New Title"));
+            _context.ChangeTracker.Clear();
             var updatedWorkout = await _context.Workouts.FindAsync(workout.Id);
             Assert.That(updatedWorkout?.Title, Is.EqualTo("New Title"));
         }

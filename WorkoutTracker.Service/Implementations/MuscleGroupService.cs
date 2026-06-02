@@ -1,6 +1,6 @@
-using Data;
-using Data.Entities;
-using Data.Enums;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Service.Interfaces;
 
@@ -8,23 +8,25 @@ namespace WorkoutTracker.Service.Implementations
 {
     public class MuscleGroupService : IMuscleGroupService
     {
-        private readonly WorkoutDbContext _context;
+        private readonly Func<WorkoutDbContext> _contextFactory;
         private readonly IAuthService _auth;
 
-        public MuscleGroupService(WorkoutDbContext context, IAuthService auth)
+        public MuscleGroupService(Func<WorkoutDbContext> contextFactory, IAuthService auth)
         {
-            _context = context;
+            _contextFactory = contextFactory;
             _auth = auth;
         }
 
         public async Task<ICollection<MuscleGroup>> GetAllAsync()
         {
-            return await _context.MuscleGroups.ToListAsync();
+            using var context = _contextFactory();
+            return await context.MuscleGroups.ToListAsync();
         }
 
         public async Task<MuscleGroup?> GetByIdAsync(int id)
         {
-            return await _context.MuscleGroups.FindAsync(id);
+            using var context = _contextFactory();
+            return await context.MuscleGroups.FindAsync(id);
         }
 
         public async Task<MuscleGroup> CreateAsync(string name)
@@ -41,8 +43,9 @@ namespace WorkoutTracker.Service.Implementations
                 Name = name
             };
             
-            _context.MuscleGroups.Add(group);
-            await _context.SaveChangesAsync();
+            using var context = _contextFactory();
+            context.MuscleGroups.Add(group);
+            await context.SaveChangesAsync();
             return group;
         }
 
@@ -55,14 +58,15 @@ namespace WorkoutTracker.Service.Implementations
                 throw new Exception("Muscle group name is required.");
             }
 
-            var group = await _context.MuscleGroups.FindAsync(id);
+            using var context = _contextFactory();
+            var group = await context.MuscleGroups.FindAsync(id);
             if (group == null)
             {
                 throw new Exception("Muscle group not found.");
             }
             
             group.Name = name;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return group;
         }
 
@@ -70,15 +74,32 @@ namespace WorkoutTracker.Service.Implementations
         {
             _auth.IsAuthenticated(UserRole.Admin);
 
-            var group = await _context.MuscleGroups.FindAsync(id);
+            using var context = _contextFactory();
+            var group = await context.MuscleGroups.FindAsync(id);
             if (group == null)
             {
                 throw new Exception("Muscle group not found.");
             }
             
-            _context.MuscleGroups.Remove(group);
-            await _context.SaveChangesAsync();
+            context.MuscleGroups.Remove(group);
+            await context.SaveChangesAsync();
             return group;
+        }
+
+        public async Task<ICollection<MuscleGroup>> BulkCreateAsync(ICollection<string> names)
+        {
+            _auth.IsAuthenticated(UserRole.Admin);
+
+            if (names == null || names.Count == 0)
+            {
+                throw new Exception("At least one muscle group name is required.");
+            }
+
+            var groups = names.Select(name => new MuscleGroup { Name = name }).ToList();
+            using var context = _contextFactory();
+            context.MuscleGroups.AddRange(groups);
+            await context.SaveChangesAsync();
+            return groups;
         }
     }
 }

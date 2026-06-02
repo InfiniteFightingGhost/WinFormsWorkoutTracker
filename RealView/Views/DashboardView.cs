@@ -2,10 +2,10 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
-using Data.Entities;
+using WorkoutTracker.Data.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Data.DTOs;
+using WorkoutTracker.Data.DTOs;
 using LiveChartsCore;
 using LiveChartsCore.Kernel;
 using LiveChartsCore.SkiaSharpView;
@@ -13,7 +13,7 @@ using LiveChartsCore.SkiaSharpView.WinForms;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 
-namespace RealView.Views
+namespace WorkoutTracker.RealView.Views
 {
     public class DashboardView : BaseView
     {
@@ -174,9 +174,15 @@ namespace RealView.Views
             _statsPanel.Controls.Clear();
             _recentPanel.Controls.Clear();
 
-            var prs = await AppRuntime.WorkoutSet.GetUserPRsAsync(userId);
-            var volume = await AppRuntime.WorkoutSet.GetMuscleVolumeAsync(userId);
-            var sessions = await AppRuntime.WorkoutSession.GetAllUserSessionsAsync(userId);
+            var prsTask = AppRuntime.WorkoutSet.GetUserPRsAsync(userId);
+            var volumeTask = AppRuntime.WorkoutSet.GetMuscleVolumeAsync(userId);
+            var sessionsTask = AppRuntime.WorkoutSession.GetAllUserSessionsAsync(userId);
+
+            await Task.WhenAll(prsTask, volumeTask, sessionsTask);
+
+            var prs = await prsTask;
+            var volume = await volumeTask;
+            var sessions = await sessionsTask;
 
             _statsPanel.Controls.Add(CreateVolumeChartCard(volume));
             _statsPanel.Controls.Add(CreatePRCard(prs));

@@ -1,7 +1,7 @@
-using Data;
-using Data.DTOs;
-using Data.Entities;
-using Data.Enums;
+using WorkoutTracker.Data;
+using WorkoutTracker.Data.DTOs;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using WorkoutTracker.Service.Interfaces;
 
@@ -9,16 +9,17 @@ namespace WorkoutTracker.Service.Implementations
 {
     public class WorkoutSetService : IWorkoutSetService
     {
-        private readonly WorkoutDbContext _context;
+        private readonly Func<WorkoutDbContext> _contextFactory;
 
-        public WorkoutSetService(WorkoutDbContext context)
+        public WorkoutSetService(Func<WorkoutDbContext> contextFactory)
         {
-            _context = context;
+            _contextFactory = contextFactory;
         }
 
         public async Task<IEnumerable<ExerciseProgressDTO>> GetExerciseProgressAsync(int userId, int exerciseId)
         {
-            var sessions = await _context.WorkoutSessions
+            using var context = _contextFactory();
+            var sessions = await context.WorkoutSessions
                 .Where(s => s.UserId == userId && s.Status == WorkoutStatus.Finished)
                 .Include(s => s.Exercises.Where(e => e.ExerciseId == exerciseId))
                     .ThenInclude(e => e.Sets)
@@ -43,7 +44,7 @@ namespace WorkoutTracker.Service.Implementations
                 .Cast<ExerciseProgressDTO>()
                 .ToList();
 
-            var activeSession = await _context.WorkoutSessions
+            var activeSession = await context.WorkoutSessions
                 .Where(s => s.UserId == userId && s.Status == WorkoutStatus.OnGoing)
                 .Include(s => s.Exercises.Where(e => e.ExerciseId == exerciseId))
                     .ThenInclude(e => e.Sets)
@@ -94,7 +95,8 @@ namespace WorkoutTracker.Service.Implementations
 
         public async Task<IEnumerable<UserPRDTO>> GetUserPRsAsync(int userId)
         {
-            var sessions = await _context.WorkoutSessions
+            using var context = _contextFactory();
+            var sessions = await context.WorkoutSessions
                 .Where(s => s.UserId == userId && s.Status == WorkoutStatus.Finished)
                 .Include(s => s.Exercises)
                     .ThenInclude(e => e.Exercise)
@@ -124,7 +126,8 @@ namespace WorkoutTracker.Service.Implementations
 
         public async Task<IEnumerable<MuscleVolumeDTO>> GetMuscleVolumeAsync(int userId)
         {
-            var sessions = await _context.WorkoutSessions
+            using var context = _contextFactory();
+            var sessions = await context.WorkoutSessions
                 .Where(s => s.UserId == userId && s.Status == WorkoutStatus.Finished)
                 .Include(s => s.Exercises)
                     .ThenInclude(e => e.Exercise)
@@ -148,16 +151,19 @@ namespace WorkoutTracker.Service.Implementations
 
         public async Task<ICollection<ExerciseSet>> GetAllAsync()
         {
-            return await _context.ExerciseSets.ToListAsync();
+            using var context = _contextFactory();
+            return await context.ExerciseSets.ToListAsync();
         }
 
         public async Task<ExerciseSet?> GetByIdAsync(int id)
         {
-            return await _context.ExerciseSets.FindAsync(id);
+            using var context = _contextFactory();
+            return await context.ExerciseSets.FindAsync(id);
         }
 
         public async Task<ExerciseSet> CreateAsync(int workoutId, int exerciseId)
         {
+            using var context = _contextFactory();
             var exerciseSet = new ExerciseSet()
             {
                 WorkoutExerciseId = workoutId,
@@ -165,35 +171,37 @@ namespace WorkoutTracker.Service.Implementations
                 Repetitions = 0,
                 Weight = 0,
                 Completed = false,
-                OrderIndex = await _context.ExerciseSets
+                OrderIndex = await context.ExerciseSets
                     .Where(es => es.WorkoutExerciseId == workoutId && es.ExerciseId == exerciseId)
                     .CountAsync(),
                 SetType = SetType.Regular
             };
-            _context.ExerciseSets.Add(exerciseSet);
-            await _context.SaveChangesAsync();
+            context.ExerciseSets.Add(exerciseSet);
+            await context.SaveChangesAsync();
             return exerciseSet;
         }
 
         public async Task UpdateAsync(ExerciseSet set)
         {
-            var existing = await _context.ExerciseSets.FindAsync(set.Id);
+            using var context = _contextFactory();
+            var existing = await context.ExerciseSets.FindAsync(set.Id);
             if (existing != null)
             {
                 existing.Weight = set.Weight;
                 existing.Repetitions = set.Repetitions;
                 existing.Completed = set.Completed;
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
             }
         }
 
         public async Task DeleteAsync(int id)
         {
-            var existing = await _context.ExerciseSets.FindAsync(id);
+            using var context = _contextFactory();
+            var existing = await context.ExerciseSets.FindAsync(id);
             if (existing != null)
             {
-                _context.ExerciseSets.Remove(existing);
-                await _context.SaveChangesAsync();
+                context.ExerciseSets.Remove(existing);
+                await context.SaveChangesAsync();
             }
         }
     }

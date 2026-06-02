@@ -1,4 +1,4 @@
-namespace Tests
+namespace WorkoutTracker.Tests
 {
     public class Tests
     {

@@ -1,4 +1,4 @@
-﻿namespace View
+namespace WorkoutTracker.View
 {
     partial class RegistrationForm
     {

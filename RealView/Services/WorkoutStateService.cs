@@ -1,7 +1,7 @@
 using System;
-using Data.Entities;
+using WorkoutTracker.Data.Entities;
 
-namespace RealView.Services
+namespace WorkoutTracker.RealView.Services
 {
     public class WorkoutStateService
     {

@@ -1,4 +1,4 @@
-﻿using Data.Enums;
+using WorkoutTracker.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Data.Entities
+namespace WorkoutTracker.Data.Entities
 {
     [Index(nameof(OrderIndex))]
     public class ExerciseSet

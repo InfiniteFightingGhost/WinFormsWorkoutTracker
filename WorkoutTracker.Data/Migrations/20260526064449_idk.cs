@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Data.Migrations
+namespace WorkoutTracker.Data.Migrations
 {
     /// <inheritdoc />
     public partial class idk : Migration

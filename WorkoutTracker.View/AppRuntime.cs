@@ -1,5 +1,5 @@
-using Controller;
-using Data;
+using WorkoutTracker.Controller;
+using WorkoutTracker.Data;
 using WorkoutTracker.View.Services;
 using WorkoutTracker.Service.Implementations;
 using WorkoutTracker.Service.Interfaces;

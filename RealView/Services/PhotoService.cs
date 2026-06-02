@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.IO;
 
-namespace RealView.Services
+namespace WorkoutTracker.RealView.Services
 {
     public static class PhotoService
     {

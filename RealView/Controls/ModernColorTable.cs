@@ -1,7 +1,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace RealView.Controls
+namespace WorkoutTracker.RealView.Controls
 {
     public class ModernColorTable : ProfessionalColorTable
     {

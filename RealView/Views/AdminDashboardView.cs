@@ -3,11 +3,11 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Text.Json;
 using System.Collections.Generic;
-using Data.Entities;
+using WorkoutTracker.Data.Entities;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace RealView.Views
+namespace WorkoutTracker.RealView.Views
 {
     public class AdminDashboardView : BaseView
     {
@@ -76,7 +76,7 @@ namespace RealView.Views
                 {
                     try
                     {
-                        var json = System.IO.File.ReadAllText(ofd.FileName);
+                        var json = File.ReadAllText(ofd.FileName);
                         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                         var data = JsonSerializer.Deserialize<ImportModel>(json, options);
 
@@ -86,45 +86,52 @@ namespace RealView.Views
                         int exCount = 0;
 
                         // 1. Import Muscle Groups
-                        var existingGroups = await AppRuntime.MuscleGroup.GetMuscleGroupsAsync();
-                        foreach (var mgName in data.MuscleGroups ?? new List<string>())
+                        if(data.MuscleGroups.Count != 0)
                         {
-                            if (!existingGroups.Any(g => g.Name.Equals(mgName, StringComparison.OrdinalIgnoreCase)))
-                            {
-                                await AppRuntime.MuscleGroup.CreateMuscleGroupAsync(mgName);
-                                mgCount++;
-                            }
+                            var existingGroups = await AppRuntime.MuscleGroup.GetMuscleGroupsAsync();
+
+                            HashSet<string> groups = new HashSet<string>(data.MuscleGroups);
+                            groups.ExceptWith(existingGroups.Select(eg => eg.Name));
+
+                            await AppRuntime.MuscleGroup.BulkCreateAsync(groups);
+                            mgCount += groups.Count;
                         }
+
 
                         // Refresh groups for exercise mapping
-                        existingGroups = await AppRuntime.MuscleGroup.GetMuscleGroupsAsync();
 
-                        // 2. Import Exercises
-                        var existingExercises = await AppRuntime.Exercise.GetAllExercisesAsync();
-                        foreach (var exData in data.Exercises ?? new List<ExerciseImportModel>())
+                        if(data.Exercises.Count != 0)
                         {
-                            if (!existingExercises.Any(e => e.Name.Equals(exData.Name, StringComparison.OrdinalIgnoreCase)))
-                            {
-                                var mg = existingGroups.FirstOrDefault(g => g.Name.Equals(exData.MuscleGroup, StringComparison.OrdinalIgnoreCase));
-                                if (mg != null)
-                                {
-                                    await AppRuntime.Exercise.CreateExerciseAsync(new Exercise
-                                    {
-                                        Name = exData.Name,
-                                        Description = exData.Description ?? "",
-                                        Instructions = exData.Instructions ?? "",
-                                        MuscleGroupId = mg.Id
-                                    });
-                                    exCount++;
-                                }
-                            }
-                        }
+                            var existingGroups = await AppRuntime.MuscleGroup.GetMuscleGroupsAsync();
 
+                            // 2. Import Exercises
+                            var existingExercises = await AppRuntime.Exercise.GetAllExercisesAsync();
+                            HashSet<Exercise> importExercises = new HashSet<Exercise>(
+                                data.Exercises.Select(ee => new Exercise
+                                {
+                                    Name = ee.Name,
+                                    Description = ee.Description,
+                                    Instructions = ee.Instructions,
+                                    MuscleGroupId = ee.MuscleGroupId
+                                }));
+
+
+                            importExercises.ExceptWith(existingExercises.Select(ee => new Exercise
+                            {
+                                Name = ee.Name,
+                                Description = ee.Description,
+                                Instructions = ee.Instructions,
+                                MuscleGroupId = ee.MuscleGroupId
+                            }));
+
+                            await AppRuntime.Exercise.BulkCreateExercisesAsync(importExercises);
+                            exCount += importExercises.Count;
+                        }
                         MessageBox.Show($"Import successful!\nCreated {mgCount} Muscle Groups and {exCount} Exercises.");
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Import failed: {ex.Message}");
+                        MessageBox.Show($"Import failed: {ex.Message}, Fault: {ex.InnerException}");
                     }
                 }
             }
@@ -141,7 +148,7 @@ namespace RealView.Views
             public string Name { get; set; } = null!;
             public string? Description { get; set; }
             public string? Instructions { get; set; }
-            public string MuscleGroup { get; set; } = null!;
+            public int MuscleGroupId { get; set; }
         }
     }
 }

@@ -2,9 +2,10 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
-using Data.Entities;
+using WorkoutTracker.Data.Entities;
+using WorkoutTracker.Utility;
 
-namespace RealView.Views
+namespace WorkoutTracker.RealView.Views
 {
     public class ExerciseManagementView : BaseView
     {
@@ -189,26 +190,22 @@ namespace RealView.Views
             await RefreshData();
         }
 
+        CancellationTokenRegistration _searchDebounceReg = new();
         private async Task RefreshData()
         {
-            var data = await AppRuntime.Exercise.GetAllExercisesAsync();
+            var mgs = AppRuntime.MuscleGroup.GetMuscleGroupsAsync();
             
             var selectedGroups = _filterList.CheckedItems.Cast<MuscleGroup>().Select(g => g.Id).ToList();
             var searchText = _filterSearchTxt.Text.Trim().ToLower();
 
-            IEnumerable<Exercise> filtered = data;
-            
-            if (selectedGroups.Any())
+            Task.Delay(LogicalToDeviceUnits(350)).ContinueWith(async _ =>
             {
-                filtered = filtered.Where(e => selectedGroups.Contains(e.MuscleGroupId));
-            }
-
-            if (!string.IsNullOrEmpty(searchText))
-            {
-                filtered = filtered.Where(e => e.Name.ToLower().Contains(searchText));
-            }
-            
-            _grid.DataSource = filtered.ToList();
+                var filtered = await AppRuntime.Exercise.GetExercisesWithFiltration(selectedGroups, searchText);
+                if (!_searchDebounceReg.Token.IsCancellationRequested)
+                {
+                    _grid.Invoke(new Action(() => _grid.DataSource = filtered));
+                }
+            }, _searchDebounceReg.Token);
         }
     }
 }

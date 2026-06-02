@@ -1,4 +1,4 @@
-﻿namespace RealView.Controls
+namespace WorkoutTracker.RealView.Controls
 {
     partial class DragGhostForm
     {
